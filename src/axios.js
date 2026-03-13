@@ -6,7 +6,11 @@ import axios from "axios";
 // "multipart/form-data; boundary=..." for FormData — setting it
 // here would break file uploads (Multer would never see req.file).
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  // Use /api in development (Vite proxy handles it)
+  // Use VITE_API_URL in production (proxied via vercel.json or direct URL)
+  baseURL: import.meta.env.MODE === "development" 
+    ? "/api" 
+    : (import.meta.env.VITE_API_URL || "/api"),
   withCredentials: true,
   headers: {
     "X-Requested-With": "XMLHttpRequest",
