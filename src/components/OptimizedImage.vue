@@ -51,7 +51,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, defineEmits } from 'vue';
+
+const emit = defineEmits(['load']);
 
 const props = defineProps({
   src: { type: String, required: true },
@@ -121,6 +123,7 @@ const optimizedSources = computed(() => {
 
 function onLoad() {
   isLoaded.value = true;
+  emit('load');
 }
 
 function onError(e) {

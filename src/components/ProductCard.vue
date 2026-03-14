@@ -8,16 +8,6 @@
     <div
       class="relative overflow-hidden aspect-square w-full bg-surface dark:bg-black/50"
     >
-      <!-- Skeleton Shimmer Overlay (CLS Prevention) -->
-      <div
-        v-if="!imageLoaded"
-        class="absolute inset-0 z-10 bg-gray-200 dark:bg-slate-800 animate-pulse"
-      >
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"
-        />
-      </div>
-
       <OptimizedImage
         :src="optimizedImageUrl"
         :alt="displayName"
@@ -26,6 +16,7 @@
         img-class="transition-all duration-700 ease-out group-hover:scale-110"
         :loading="priority ? 'eager' : 'lazy'"
         :priority="priority"
+        @load="imageLoaded = true"
       />
 
       <!-- Wishlist Button -->
