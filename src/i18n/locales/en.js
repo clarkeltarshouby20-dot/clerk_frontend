@@ -25,6 +25,9 @@ export default {
     followUs: "Follow Us",
   },
 
+  "JPEG, PNG, WEBP. Max 5MB.": "JPEG, PNG, WEBP. Max 5MB.",
+  "Invalid file type.": "Invalid file type.",
+  "File too large. Max size is": "File too large. Max size is",
   // ── Common / Shared ───────────────────────────────────────
   common: {
     login: "Login",
@@ -77,6 +80,7 @@ export default {
     product: "Product",
     contactUs: "Contact Us",
     copied: "Copied to clipboard!",
+    typeSomething: "Type here...",
     change: "Change",
     remove: "Remove",
     dropNow: "Drop Now",
@@ -145,6 +149,7 @@ export default {
     addSubtitle: "Create New Catalog Item",
     noProducts: "No products found.",
     addedToCart: "Added to cart!",
+    choosePurchaseOptions: "Please choose the purchase options first.",
     items: "items",
     item: "item",
     lowStockBadge: "Only {n} left!",
@@ -225,6 +230,12 @@ export default {
     haveCoupon: "Have a discount code?",
     couponApplied: "Coupon Applied Successfully!",
     discount: "Discount",
+    governorate: "Governorate",
+    governorateSearchPlaceholder: "Search by governorate name",
+    noGovernoratesFound: "No governorates match your search.",
+    selectGovernorate: "Select",
+    selectedGovernorate: "Selected",
+    selectedGovernorateLabel: "Selected Governorate",
   },
 
   // ── Payment ──────────────────────────────────────────────
@@ -262,11 +273,16 @@ export default {
       orderDate: "Order Date",
       paymentMethod: "Payment Method",
       totalAmount: "Total Amount",
+      pricingBreakdown: "Pricing Breakdown",
       orderRejected: "Order Rejected",
       orderCancelled: "Order Cancelled",
+      orderReturned: "Order Returned",
       rejectedDesc:
         "Your order has been cancelled due to payment rejection by the administration team.",
+      returnedDesc:
+        "This order was returned after delivery. Inventory was restored and it is excluded from net revenue.",
       rejectionReason: "Reason for Rejection",
+      returnReason: "Reason for Return",
       liveStatus: "Live Tracking Status",
       currentStage: "Current Stage",
       includedItems: "Included Items",
@@ -280,6 +296,7 @@ export default {
       shipped: "Shipped",
       out_for_delivery: "Out for Delivery",
       delivered: "Delivered",
+      returned: "Returned",
       completed: "Completed",
       cancelled: "Cancelled",
       rejected: "Rejected",
@@ -333,6 +350,7 @@ export default {
     users: "Users",
     totalOrders: "Total Orders",
     totalRevenue: "Total Revenue",
+    totalNetProfit: "Total Net Profit",
     pendingPayments: "Pending Payments",
     totalProducts: "Total Products",
     totalUsers: "Total Users",
@@ -359,7 +377,12 @@ export default {
     markShipped: "Mark as Shipped",
     markDelivered: "Mark Delivered",
     rejectOrder: "Reject Order",
+    returnProduct: "Return Product",
+    returnReasonPrompt: "Please enter a reason for returning this order (optional):",
     orderClosed: "This order is fulfilled or closed.",
+    returnedSuccessfully: "Returned successfully.",
+    returnedNotice:
+      "This order was returned successfully. Stock and dashboard totals have already been reversed.",
     statusUpdated: "Order status updated to: {status}",
     clickToZoom: "Click to Zoom",
     productImages: "Product Images",
@@ -416,6 +439,7 @@ export default {
         verified: "Verified",
         shipped: "Shipped",
         completed: "Completed",
+        returned: "Returned",
       },
     },
     selectCategory: "Select Category...",
@@ -423,8 +447,11 @@ export default {
     imageRequirements2MB: "JPG, PNG or WebP — max 2 MB",
     saveError: "Error saving product. Please check the form.",
     currentPrice: "Current Price",
+    netProfit: "Net Profit / Unit",
     oldPrice: "Original Price (Optional)",
     mainImage: "Main Image",
+    productDetails: "Product Details",
+    productDescription: "Product Description",
     gallery: "Gallery",
     mandatory: "Mandatory",
     coupons: {
@@ -481,9 +508,10 @@ export default {
     // Section headings
     sectionIdentity: "Identity",
     sectionContact: "Contact",
-    sectionSocial: "Social Links",
-    sectionAds: "Advertising & Analytics",
-    sectionScripts: "Custom Scripts",
+      sectionSocial: "Social Links",
+      sectionAds: "Advertising & Analytics",
+      sectionScripts: "Custom Scripts",
+      sectionShipping: "Shipping",
 
     // Identity fields
     siteName: "Site Name",
@@ -504,7 +532,7 @@ export default {
     whatsappNumber: "WhatsApp Number",
     whatsappPlaceholder: "+201012345678",
     currencyCode: "Currency Code (ISO 4217)",
-    currencyPlaceholder: "USD",
+    currencyPlaceholder: "EGP",
 
     // Advertising fields
     googleAnalyticsId: "Google Analytics ID",
@@ -522,8 +550,18 @@ export default {
     scriptsWarning:
       "Only add trusted scripts (Google, Meta, etc.). Malicious scripts can compromise your site.",
 
-    sectionPayment: "Payment Methods Config",
-    walletNumber: "Vodafone/Orange Cash Number",
+      sectionPayment: "Payment Methods Config",
+      shippingGovernoratesTitle: "Egypt Governorates Delivery Pricing",
+      shippingGovernoratesHint:
+        "Enable the governorates you ship to and set one fixed delivery fee for each order.",
+      shippingSearchPlaceholder: "Search governorates...",
+      governorateName: "Governorate",
+      shippingFeeLabel: "Delivery Fee",
+      shippingAvailability: "Availability",
+      shippingEnabled: "Enabled",
+      shippingDisabled: "Disabled",
+      shippingNoResults: "No governorates found for this search.",
+      walletNumber: "Vodafone/Orange Cash Number",
     instapayHandle: "InstaPay Address (IPA)",
     walletPlaceholder: "e.g. 01012345678",
     instapayPlaceholder: "e.g. store{'@'}instapay",

@@ -90,48 +90,142 @@
             <p
               class="text-2xl font-black text-primary-600 dark:text-primary-400"
             >
-              ${{ Number(order.total_price).toFixed(2) }}
+              {{ formatCurrency(Number(order.total_price)) }}
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="card p-6">
+          <h3 class="mb-4 text-sm font-black uppercase tracking-[0.2em] text-textSecondary">
+            {{ $t("checkout.shippingInfo") }}
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-textSecondary">{{ $t("checkout.fullName") }}</span>
+              <span class="font-bold text-textPrimary">{{ order.shipping_full_name || "—" }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-textSecondary">{{ $t("checkout.phone") }}</span>
+              <span class="font-bold text-textPrimary" dir="ltr">{{ order.shipping_phone || "—" }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-textSecondary">{{ $t("checkout.governorate") }}</span>
+              <span class="font-bold text-textPrimary">{{ order.shipping_governorate ? governorateLabel(order.shipping_governorate) : "—" }}</span>
+            </div>
+            <div class="rounded-2xl border border-borderThin bg-background p-4 text-textPrimary">
+              {{ order.shipping_address || "—" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-6">
+          <h3 class="mb-4 text-sm font-black uppercase tracking-[0.2em] text-textSecondary">
+            {{ $t("orders.tracker.pricingBreakdown") }}
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-textSecondary">{{ $t("cart.subtotal") }}</span>
+              <span class="font-bold text-textPrimary">{{ formatCurrency(Number(order.items_total || order.total_price)) }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-textSecondary">{{ $t("checkout.shippingFee") }}</span>
+              <span class="font-bold text-textPrimary">{{ formatCurrency(Number(order.shipping_fee || 0)) }}</span>
+            </div>
+            <div v-if="Number(order.discount_amount || 0) > 0" class="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+              <span>{{ $t("checkout.discount") }}</span>
+              <span>- {{ formatCurrency(Number(order.discount_amount || 0)) }}</span>
+            </div>
+            <div class="border-t border-borderThin pt-3 flex items-center justify-between text-base">
+              <span class="font-black text-textPrimary">{{ $t("common.total") }}</span>
+              <span class="font-black text-primary-600 dark:text-primary-400">{{ formatCurrency(Number(order.total_price)) }}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Rejection Alert Blur Modal Style -->
       <div
-        v-if="order.status === 'rejected' || order.status === 'cancelled'"
+        v-if="['rejected', 'cancelled', 'returned'].includes(order.status)"
         class="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-red-50/80 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 backdrop-blur-md flex gap-4 items-start shadow-sm"
       >
         <div
-          class="p-3 bg-red-100 dark:bg-red-800/50 rounded-full flex-shrink-0"
+          :class="[
+            'p-3 rounded-full flex-shrink-0',
+            order.status === 'returned'
+              ? 'bg-amber-100 dark:bg-amber-900/40'
+              : 'bg-red-100 dark:bg-red-800/50',
+          ]"
         >
-          <XCircle class="w-6 h-6 text-red-600 dark:text-red-400" />
+          <component
+            :is="order.status === 'returned' ? PackageOpen : XCircle"
+            :class="[
+              'w-6 h-6',
+              order.status === 'returned'
+                ? 'text-amber-600 dark:text-amber-300'
+                : 'text-red-600 dark:text-red-400',
+            ]"
+          />
         </div>
         <div>
-          <h3 class="text-lg font-bold text-red-900 dark:text-red-300">
+          <h3
+            :class="[
+              'text-lg font-bold',
+              order.status === 'returned'
+                ? 'text-amber-900 dark:text-amber-300'
+                : 'text-red-900 dark:text-red-300',
+            ]"
+          >
             {{
-              order.status === "cancelled"
+              order.status === "returned"
+                ? $t("orders.tracker.orderReturned")
+                : order.status === "cancelled"
                 ? $t("orders.tracker.orderCancelled")
                 : $t("orders.tracker.orderRejected")
             }}
           </h3>
           <p
-            class="text-red-700 dark:text-red-400 mt-1 font-medium leading-relaxed"
+            :class="[
+              'mt-1 font-medium leading-relaxed',
+              order.status === 'returned'
+                ? 'text-amber-700 dark:text-amber-300'
+                : 'text-red-700 dark:text-red-400',
+            ]"
           >
-            {{ $t("orders.tracker.rejectedDesc") }}
+            {{
+              order.status === "returned"
+                ? $t("orders.tracker.returnedDesc")
+                : $t("orders.tracker.rejectedDesc")
+            }}
           </p>
           <div
-            v-if="order.rejection_reason"
-            class="mt-4 p-4 bg-white/60 dark:bg-black/20 rounded-xl border border-red-100 dark:border-red-900/30"
+            v-if="order.rejection_reason || order.return_reason"
+            :class="[
+              'mt-4 p-4 bg-white/60 dark:bg-black/20 rounded-xl',
+              order.status === 'returned'
+                ? 'border border-amber-100 dark:border-amber-900/30'
+                : 'border border-red-100 dark:border-red-900/30',
+            ]"
           >
             <p
-              class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1"
+              :class="[
+                'text-xs font-bold uppercase tracking-widest mb-1',
+                order.status === 'returned'
+                  ? 'text-amber-500'
+                  : 'text-red-400',
+              ]"
             >
-              {{ $t("orders.tracker.rejectionReason") }}
+              {{
+                order.status === "returned"
+                  ? $t("orders.tracker.returnReason")
+                  : $t("orders.tracker.rejectionReason")
+              }}
             </p>
             <p
               class="text-gray-800 dark:text-gray-200 font-medium font-serif italic border-l-2 border-red-400 pl-3"
             >
-              "{{ order.rejection_reason }}"
+              "{{ order.return_reason || order.rejection_reason }}"
             </p>
           </div>
         </div>
@@ -226,32 +320,49 @@
         <ul class="space-y-4">
           <li
             v-for="item in order.items"
-            :key="item.product_id"
+            :key="item.id"
             class="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
           >
             <img
-              :src="getImageUrl(item.main_image)"
+              :src="getImageUrl(item.selected_image_url || item.main_image)"
               class="w-16 h-16 rounded-xl object-cover bg-gray-100 border border-gray-200/50 dark:border-gray-700 flex-shrink-0"
               @error="(e) => (e.target.src = 'https://placehold.co/64x64')"
             />
             <div class="flex flex-col justify-center flex-1 min-w-0">
-              <span
-                class="text-sm font-bold text-gray-900 dark:text-white truncate"
-              >
+              <span class="text-sm font-bold text-gray-900 dark:text-white truncate">
                 {{
                   ui.locale === "ar" && item.product_name_ar
                     ? item.product_name_ar
                     : item.product_name
                 }}
               </span>
-              <div class="flex items-center justify-between mt-1">
+              <div
+                v-if="item.selected_color_name || item.selected_size"
+                class="mt-1 flex flex-wrap items-center gap-2"
+              >
                 <span
-                  class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded font-medium"
+                  v-if="item.selected_color_name"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-gray-800 dark:text-gray-300"
                 >
+                  <span
+                    class="h-2.5 w-2.5 rounded-full border border-white/40"
+                    :style="{ backgroundColor: item.selected_color_value || '#c8a96b' }"
+                  ></span>
+                  {{ item.selected_color_name }}
+                </span>
+                <span
+                  v-if="item.selected_size"
+                  class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  {{ item.selected_size }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded font-medium">
                   {{ $t("orders.tracker.qty") }}: {{ item.quantity }}
                 </span>
                 <span class="font-black text-sm text-gray-900 dark:text-white">
-                  ${{ (Number(item.price) * item.quantity).toFixed(2) }}
+                  {{ formatCurrency(Number(item.price) * item.quantity) }}
                 </span>
               </div>
             </div>
@@ -308,9 +419,11 @@
 import { ref, onMounted, computed, markRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/ui.js";
+import { useSettingsStore } from "@/stores/settings.js";
 import { useI18n } from "vue-i18n";
 import api from "@/axios.js";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import { useCurrency } from "@/composables/useCurrency.js";
 import {
   ArrowLeft,
   Truck,
@@ -324,19 +437,27 @@ import {
   ImageIcon,
   X,
 } from "lucide-vue-next";
+import { getGovernorateDisplayName } from "@/utils/governorates.js";
 
 const route = useRoute();
 const router = useRouter();
 const ui = useUiStore();
-const { t } = useI18n();
+const settingsStore = useSettingsStore();
+const { t, locale } = useI18n();
+const { formatCurrency } = useCurrency();
 
 const order = ref(null);
 const loading = ref(true);
 const error = ref("");
 const lightboxImage = ref(null);
 
+function governorateLabel(value) {
+  return getGovernorateDisplayName(value, locale.value);
+}
+
 onMounted(async () => {
   try {
+    await settingsStore.fetchSettings();
     const { data } = await api.get(`/orders/${route.params.id}/track`);
     order.value = data.data;
   } catch (err) {
@@ -385,6 +506,7 @@ const trackerSteps = computed(() => {
   let mappedStatus = status;
   if (status === "confirmed") mappedStatus = "verified";
   if (status === "out_for_delivery") mappedStatus = "shipped";
+  if (status === "returned") mappedStatus = "delivered";
 
   let currentIdx = stepsBase.findIndex((s) => s.id === mappedStatus);
   if (currentIdx === -1) currentIdx = 0; // Fallback mapping
@@ -405,6 +527,7 @@ const progressWidth = computed(() => {
   let mappedStatus = status;
   if (status === "confirmed") mappedStatus = "verified";
   if (status === "out_for_delivery") mappedStatus = "shipped";
+  if (status === "returned") mappedStatus = "delivered";
 
   const idx = steps.indexOf(mappedStatus);
   if (idx === -1) return "0%";
@@ -451,3 +574,4 @@ const progressWidth = computed(() => {
   }
 }
 </style>
+

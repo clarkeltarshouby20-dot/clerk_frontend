@@ -53,7 +53,7 @@
 
         <!-- Kanban Board Area -->
         <div
-          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 overflow-x-auto pb-4 items-start min-h-[60vh]"
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 overflow-x-auto pb-4 items-start min-h-[60vh]"
         >
           <!-- Column Loop -->
           <div
@@ -168,7 +168,7 @@
                   <div
                     class="font-black text-textPrimary tracking-tight tabular-nums"
                   >
-                    ${{ Number(order.total_price).toFixed(2) }}
+                    {{ formatCurrency(Number(order.total_price)) }}
                   </div>
                 </div>
               </div>
@@ -269,7 +269,19 @@
                   {{ $t("checkout.fullName") }}
                 </p>
                 <p class="font-semibold text-textPrimary tracking-tight">
-                  {{ selectedOrder.name }}
+                  {{ selectedOrder.shipping_full_name || selectedOrder.name }}
+                </p>
+              </div>
+              <div
+                class="bg-background p-3 rounded-xl border border-borderThin"
+              >
+                <p
+                  class="text-[11px] text-textSecondary font-medium mb-1 uppercase font-bold tracking-wider"
+                >
+                  {{ $t("checkout.governorate") }}
+                </p>
+                <p class="font-semibold text-textPrimary tracking-tight">
+                  {{ selectedOrder.shipping_governorate ? governorateLabel(selectedOrder.shipping_governorate) : "N/A" }}
                 </p>
               </div>
               <div
@@ -320,7 +332,7 @@
           </div>
 
           <!-- Order Items -->
-          <div class="card p-6 shadow-sm">
+            <div class="card p-6 shadow-sm">
             <div
               class="flex items-center gap-3 border-b border-borderThin pb-4 mb-5"
             >
@@ -337,36 +349,75 @@
             <ul class="space-y-3">
               <li
                 v-for="item in selectedOrder.items"
-                :key="item.product_id"
+                :key="item.id"
                 class="flex items-center justify-between gap-4 p-3 rounded-xl border border-borderThin bg-background hover:border-borderThin dark:hover:border-gray-600 transition-colors"
               >
                 <div class="flex items-center gap-4">
                   <img
-                    :src="item.main_image || 'https://placehold.co/100x100'"
+                    :src="item.selected_image_url || item.main_image || 'https://placehold.co/100x100'"
                     class="w-12 h-12 rounded-lg object-cover bg-gray-200 dark:bg-gray-700 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)]"
                   />
                   <div>
                     <p class="font-bold text-textPrimary tracking-tight text-sm">
                       {{ item.product_name }}
                     </p>
-                    <p class="text-xs text-textSecondary mt-0.5 font-medium">
-                      Qty: {{ item.quantity }} × ${{
-                        Number(item.price).toFixed(2)
-                      }}
+                    <div
+                      v-if="item.selected_color_name || item.selected_size"
+                      class="mt-1 flex flex-wrap items-center gap-2"
+                    >
+                      <span
+                        v-if="item.selected_color_name"
+                        class="inline-flex items-center gap-1.5 rounded-full bg-surface px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-textSecondary"
+                      >
+                        <span
+                          class="h-2.5 w-2.5 rounded-full border border-white/40"
+                          :style="{ backgroundColor: item.selected_color_value || '#c8a96b' }"
+                        ></span>
+                        {{ item.selected_color_name }}
+                      </span>
+                      <span
+                        v-if="item.selected_size"
+                        class="rounded-full bg-surface px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-textSecondary"
+                      >
+                        {{ item.selected_size }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-textSecondary mt-1 font-medium">
+                      Qty: {{ item.quantity }} x {{ formatCurrency(Number(item.price)) }}
                     </p>
                   </div>
                 </div>
                 <div class="font-black text-textPrimary tracking-tight text-base">
-                  ${{ (item.quantity * Number(item.price)).toFixed(2) }}
+                  {{ formatCurrency(item.quantity * Number(item.price)) }}
                 </div>
               </li>
             </ul>
-            <div
-              class="mt-5 flex justify-between items-center text-xl font-black border-t border-borderThin pt-5 text-textPrimary tracking-tight"
-            >
+              <div
+                class="mb-5 grid gap-3 rounded-2xl border border-borderThin bg-background p-4 text-sm"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-textSecondary">{{ $t("cart.subtotal") }}</span>
+                  <span class="font-bold text-textPrimary">{{ formatCurrency(Number(selectedOrder.items_total || selectedOrder.total_price)) }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-textSecondary">{{ $t("checkout.shippingFee") }}</span>
+                  <span class="font-bold text-textPrimary">{{ formatCurrency(Number(selectedOrder.shipping_fee || 0)) }}</span>
+                </div>
+                <div
+                  v-if="Number(selectedOrder.discount_amount || 0) > 0"
+                  class="flex items-center justify-between gap-3 text-emerald-600 dark:text-emerald-400"
+                >
+                  <span>{{ $t("checkout.discount") }}</span>
+                  <span>- {{ formatCurrency(Number(selectedOrder.discount_amount || 0)) }}</span>
+                </div>
+              </div>
+
+              <div
+                class="mt-5 flex justify-between items-center text-xl font-black border-t border-borderThin pt-5 text-textPrimary tracking-tight"
+              >
               <span>{{ $t("orders.tracker.totalAmount") }}</span>
               <span class="text-primary-600 dark:text-primary-400"
-                >${{ Number(selectedOrder.total_price).toFixed(2) }}</span
+                >{{ formatCurrency(Number(selectedOrder.total_price)) }}</span
               >
             </div>
           </div>
@@ -484,6 +535,13 @@
             <div
               class="border-t border-borderThin pt-5 space-y-3"
             >
+              <div
+                v-if="selectedOrder.status === 'returned'"
+                class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200"
+              >
+                {{ $t("admin.returnedNotice") }}
+              </div>
+
               <label
                 class="form-label text-xs font-bold uppercase tracking-wider mb-2 block"
               >
@@ -540,7 +598,7 @@
               <!-- Reject Order -->
               <button
                 v-if="
-                  !['delivered', 'cancelled', 'rejected'].includes(
+                  !['delivered', 'cancelled', 'rejected', 'returned'].includes(
                     selectedOrder.status,
                   )
                 "
@@ -556,16 +614,34 @@
                 {{ $t("admin.rejectOrder") }}
               </button>
 
+              <button
+                v-if="selectedOrder.status === 'delivered'"
+                @click="attemptReturnOrder"
+                :disabled="isSaving"
+                class="w-full py-3 rounded-xl shadow-sm flex justify-center items-center gap-2 transition-all disabled:opacity-50 mt-4 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300"
+              >
+                <LoadingSpinner
+                  v-if="isSaving && targetStatus === 'returned'"
+                  :size="20"
+                />
+                <Package v-else class="w-5 h-5" />
+                {{ $t("admin.returnProduct") }}
+              </button>
+
               <!-- Completion state badges -->
               <div
                 v-if="
-                  ['delivered', 'cancelled', 'rejected'].includes(
+                  ['cancelled', 'rejected', 'returned'].includes(
                     selectedOrder.status,
                   )
                 "
                 class="text-center py-4 text-sm font-bold text-textSecondary bg-gray-50 rounded-xl dark:bg-gray-800"
               >
-                {{ $t("admin.orderClosed") }}
+                {{
+                  selectedOrder.status === "returned"
+                    ? $t("admin.returnedSuccessfully")
+                    : $t("admin.orderClosed")
+                }}
               </div>
             </div>
           </div>
@@ -623,16 +699,23 @@ import {
 import PaginationBar from "@/components/PaginationBar.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import api from "@/axios.js";
+import { getGovernorateDisplayName } from "@/utils/governorates.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 import { useUI } from "@/composables/useUI.js";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const ui = useUI();
 const showToast = ui.showToast;
+const { formatCurrency } = useCurrency();
 
 const orders = ref([]);
 const loading = ref(true);
 const isSaving = ref(false);
+
+function governorateLabel(value) {
+  return getGovernorateDisplayName(value, locale.value);
+}
 
 const pagination = reactive({ page: 1, pages: 1, total: 0 });
 // No more status filter here since Kanban displays them all
@@ -670,6 +753,13 @@ const kanbanColumns = [
     statuses: ["delivered"],
     icon: CheckCircle,
     color: "text-emerald-500",
+  },
+  {
+    id: "returned",
+    label: "Returned",
+    statuses: ["returned"],
+    icon: Package,
+    color: "text-amber-600",
   },
 ];
 
@@ -726,6 +816,7 @@ const trackerSteps = computed(() => {
     shipped: 2,
     out_for_delivery: 2,
     delivered: 3,
+    returned: 4,
     cancelled: -1,
     rejected: -1,
   };
@@ -752,6 +843,11 @@ const trackerSteps = computed(() => {
       label: t("orders.status.delivered") || "Delivered",
       completed: currentStepNum >= 3,
     },
+    {
+      icon: Package,
+      label: t("orders.status.returned") || "Returned",
+      completed: currentStepNum >= 4,
+    },
   ];
 });
 
@@ -764,6 +860,7 @@ const trackerProgress = computed(() => {
     shipped: 66,
     out_for_delivery: 66,
     delivered: 100,
+    returned: 100,
   };
   return (map[status] || 0) + "%";
 });
@@ -779,6 +876,8 @@ function onSearchInput() {
 function statusClass(s) {
   return s === "completed" || s === "delivered"
     ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+    : s === "returned"
+      ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
     : s === "cancelled" || s === "problem"
       ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
       : s === "out_for_delivery"
@@ -826,14 +925,30 @@ function viewOrder(order) {
 
 async function attemptRejectOrder() {
   const reason = await ui.promptAction({
-    title: "Reject Order",
-    message: "Please enter a reason for rejecting this order (optional):",
-    confirmLabel: "Reject Order",
+    title: t("admin.rejectOrder"),
+    message:
+      t("admin.rejectReasonPrompt") ||
+      "Please enter a reason for rejecting this order (optional):",
+    confirmLabel: t("admin.rejectOrder"),
     variant: "danger",
   });
 
   if (reason === null) return; // User cancelled modal
   await saveOrderStatus("rejected", reason);
+}
+
+async function attemptReturnOrder() {
+  const reason = await ui.promptAction({
+    title: t("admin.returnProduct"),
+    message:
+      t("admin.returnReasonPrompt") ||
+      "Please enter a reason for returning this order (optional):",
+    confirmLabel: t("admin.returnProduct"),
+    variant: "warning",
+  });
+
+  if (reason === null) return;
+  await saveOrderStatus("returned", reason);
 }
 
 async function saveOrderStatus(statusToApply, reason = "") {
@@ -843,7 +958,7 @@ async function saveOrderStatus(statusToApply, reason = "") {
   targetStatus.value = statusToApply;
   try {
     const orderId = selectedOrder.value.id;
-    const { data } = await api.put(`/orders/${orderId}/status`, {
+    await api.put(`/orders/${orderId}/status`, {
       status: statusToApply,
       reason: reason,
     });
@@ -853,11 +968,12 @@ async function saveOrderStatus(statusToApply, reason = "") {
       "success",
     );
 
-    // Hot-reload the local state without a full refetch
-    selectedOrder.value.status = statusToApply;
-    const index = orders.value.findIndex((o) => o.id === orderId);
-    if (index !== -1) {
-      orders.value[index].status = statusToApply;
+    await fetchOrders(pagination.page);
+    const refreshedOrder = orders.value.find((order) => order.id === orderId);
+    if (refreshedOrder) {
+      selectedOrder.value = refreshedOrder;
+    } else {
+      selectedOrder.value = null;
     }
   } catch (e) {
     showToast?.(
@@ -921,3 +1037,4 @@ onMounted(() => fetchOrders());
   }
 }
 </style>
+

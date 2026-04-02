@@ -27,15 +27,17 @@
         type="file"
         class="hidden"
         :accept="accept"
+        :disabled="readonly"
         @change="onFileSelect"
       />
 
       <!-- Upload Trigger Area -->
       <div
-        @click="fileInput?.click()"
+        @click="!readonly && fileInput?.click()"
         class="relative w-full h-full overflow-hidden cursor-pointer border-2 border-dashed transition-all duration-500 shadow-sm"
         :class="[
           shape === 'circle' ? 'rounded-full' : 'rounded-3xl',
+          readonly ? 'opacity-60 cursor-not-allowed' : '',
           isDragging 
             ? 'border-primary-500 bg-primary-500/5 ring-8 ring-primary-500/5' 
             : 'border-slate-200 dark:border-slate-800 hover:border-primary-500/50 bg-slate-50/50 dark:bg-slate-900/50 group-hover:bg-slate-50 dark:group-hover:bg-slate-900',
@@ -75,7 +77,8 @@
     <div class="flex items-center justify-between gap-4 pt-2">
       <div v-if="previewUrl" class="flex items-center gap-2">
         <button 
-          @click="fileInput?.click()"
+          @click="!readonly && fileInput?.click()"
+          :disabled="readonly"
           class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary-500/10 hover:bg-primary-500 text-primary-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all duration-300"
         >
           <Edit2 class="w-3 h-3" />
@@ -84,6 +87,7 @@
         <button 
           v-if="!uploading"
           @click="removeImage"
+          :disabled="readonly"
           class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all duration-300"
         >
           <X class="w-3 h-3" />
@@ -126,6 +130,7 @@ const props = defineProps({
   maxSize: { type: Number, default: 5 * 1024 * 1024 }, // 5MB default
   shape: { type: String, default: 'square' }, // 'square' or 'circle'
   uploading: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   aspect: { type: String, default: 'aspect-square' },
   fit: { type: String, default: 'cover' }
 });
@@ -137,12 +142,51 @@ const previewUrl = ref(null);
 const isDragging = ref(false);
 const localError = ref('');
 
+function decodeHtmlEntities(value) {
+  if (typeof value !== "string" || !value) return value;
+
+  return value
+    .replace(/&#x([0-9a-f]+);/gi, (_match, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
+    )
+    .replace(/&#([0-9]+);/g, (_match, dec) =>
+      String.fromCharCode(parseInt(dec, 10)),
+    )
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function matchesAcceptedType(file, accept) {
+  if (!accept) return true;
+
+  const accepted = accept
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+
+  const mime = `${file.type || ''}`.toLowerCase();
+  const extension = file.name?.includes('.')
+    ? `.${file.name.split('.').pop().toLowerCase()}`
+    : '';
+
+  return accepted.some((entry) => {
+    if (entry.endsWith('/*')) {
+      const family = entry.slice(0, -1);
+      return mime.startsWith(family);
+    }
+    return entry === mime || entry === extension;
+  });
+}
+
 // Sync preview with modelValue
 watch(() => props.modelValue, (val) => {
   if (!val) {
     previewUrl.value = null;
   } else if (typeof val === 'string') {
-    previewUrl.value = val;
+    previewUrl.value = decodeHtmlEntities(val);
   } else if (val instanceof File) {
     // Only update preview if it's not already set correctly
     if (!previewUrl.value || !previewUrl.value.startsWith('blob:')) {
@@ -160,6 +204,7 @@ function onFileSelect(e) {
 }
 
 function onDragOver() {
+  if (props.readonly) return;
   isDragging.value = true;
 }
 
@@ -168,19 +213,18 @@ function onDragLeave() {
 }
 
 function onDrop(e) {
+  if (props.readonly) return;
   isDragging.value = false;
   const file = e.dataTransfer.files?.[0];
   if (file) handleFile(file);
 }
 
 function handleFile(file) {
+  if (props.readonly) return;
   localError.value = '';
   
   // Validation
-  if (!props.accept.split(',').some(type => {
-    const pattern = type.trim().replace('*', '.*');
-    return new RegExp(pattern).test(file.type);
-  })) {
+  if (!matchesAcceptedType(file, props.accept)) {
     setError(t('Invalid file type.') + ' (' + props.accept + ')');
     return;
   }
@@ -202,6 +246,7 @@ function handleFile(file) {
 }
 
 function removeImage() {
+  if (props.readonly) return;
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value);
   }

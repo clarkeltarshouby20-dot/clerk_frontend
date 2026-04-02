@@ -83,6 +83,7 @@
 
 <script setup>
 import { ref, watch, onBeforeUnmount } from 'vue';
+import { useI18n } from "vue-i18n";
 import { Camera, Plus, X, Edit2, AlertCircle } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -97,6 +98,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:images']);
+const { t } = useI18n();
 
 const inputs = ref([]);
 const files = ref([null, null, null, null, null]);

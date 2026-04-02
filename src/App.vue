@@ -14,6 +14,7 @@
         </RouterView>
       </main>
       <AppFooter />
+      <FloatingWhatsappButton />
     </template>
 
     <!-- Admin routes use their own layout component -->
@@ -32,6 +33,9 @@ import { useRoute } from "vue-router";
 import { defineAsyncComponent } from "vue";
 import AppHeader from "@/components/AppHeader.vue";
 const AppFooter = defineAsyncComponent(() => import("@/components/AppFooter.vue"));
+const FloatingWhatsappButton = defineAsyncComponent(
+  () => import("@/components/FloatingWhatsappButton.vue"),
+);
 const GlobalUIManager = defineAsyncComponent(() => import("@/components/GlobalUIManager.vue"));
 import { useSettingsStore } from "@/stores/settings.js";
 import { useScriptInjector } from "@/composables/useScriptInjector.js";

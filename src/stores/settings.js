@@ -12,6 +12,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import api from "@/axios.js";
+import { normalizeCurrencyCode } from "@/composables/useCurrency.js";
 
 export const useSettingsStore = defineStore("settings", () => {
   /** Raw settings object as returned by the API */
@@ -29,7 +30,9 @@ export const useSettingsStore = defineStore("settings", () => {
   const logoUrl = computed(() => data.value.logo_url || null);
   const faviconUrl = computed(() => data.value.favicon_url || null);
   
-  const currencyCode = computed(() => data.value.currency_code || "USD");
+  const currencyCode = computed(() =>
+    normalizeCurrencyCode(data.value.currency_code),
+  );
   const contactEmail = computed(() => data.value.contact_email || "");
   const whatsappNumber = computed(() => data.value.whatsapp_number || "");
   const googleAnalyticsId = computed(
@@ -46,6 +49,11 @@ export const useSettingsStore = defineStore("settings", () => {
   const socialTelegram = computed(() => data.value.social_telegram || "");
   const socialGmail = computed(() => data.value.social_gmail || "");
   const socialWhatsapp = computed(() => data.value.social_whatsapp || "");
+  const shippingGovernorates = computed(() =>
+    Array.isArray(data.value.shipping_governorates)
+      ? data.value.shipping_governorates
+      : [],
+  );
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -61,7 +69,10 @@ export const useSettingsStore = defineStore("settings", () => {
     loading.value = true;
     try {
       const { data: res } = await api.get("/settings");
-      data.value = res.data || {};
+      data.value = {
+        ...(res.data || {}),
+        currency_code: normalizeCurrencyCode(res.data?.currency_code),
+      };
       isLoaded.value = true;
     } catch (err) {
       console.warn("[settings] Failed to load site settings:", err);
@@ -83,7 +94,10 @@ export const useSettingsStore = defineStore("settings", () => {
     try {
       const { data: res } = await api.put("/settings", payload);
       // Sync full returned row so all accessors update immediately
-      data.value = res.data || {};
+      data.value = {
+        ...(res.data || {}),
+        currency_code: normalizeCurrencyCode(res.data?.currency_code),
+      };
       return res.data;
     } finally {
       loading.value = false;
@@ -112,6 +126,7 @@ export const useSettingsStore = defineStore("settings", () => {
     socialTelegram,
     socialGmail,
     socialWhatsapp,
+    shippingGovernorates,
 
     // Actions
     fetchSettings,

@@ -7,11 +7,11 @@
     </h2>
 
     <!-- ── Visual Analytics ───────────────────────── -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
       <!-- Skeleton placeholders while loading -->
       <template v-if="loading">
         <div
-          v-for="n in auth.isOwner ? 5 : 4"
+          v-for="n in auth.isOwner ? 6 : 5"
           :key="n"
           class="card p-6 flex flex-col gap-4"
         >
@@ -82,14 +82,14 @@
     <!-- ── Recent Orders Table ──────────────────────────────── -->
     <div class="card overflow-hidden bg-surface border-none shadow-sm">
       <div
-        class="px-6 py-5 border-b border-borderThin flex items-center justify-between bg-background/50"
+          class="px-6 py-5 border-b border-borderThin flex items-center justify-between bg-background/60"
       >
         <h3 class="font-extrabold text-lg text-textPrimary">
           {{ $t("admin.recentOrders") }}
         </h3>
         <RouterLink
           to="/admin/orders"
-          class="text-xs text-primary-600 dark:text-primary-400 font-bold uppercase tracking-widest hover:text-primary-500 transition-colors"
+          class="text-xs text-primary-700 dark:text-primary-300 font-bold uppercase tracking-widest hover:text-primary-500 transition-colors"
         >
           {{ $t("common.viewAll") }}
         </RouterLink>
@@ -147,7 +147,7 @@
                 {{ idx + 1 }}
               </td>
               <td class="px-6 py-4 font-bold text-textPrimary">
-                {{ order.username || order.email }}
+                {{ order.name || order.email }}
               </td>
               <td class="px-6 py-4">
                 <span
@@ -170,7 +170,7 @@
                 </span>
               </td>
               <td class="px-6 py-4 font-black text-textPrimary">
-                ${{ Number(order.total_price).toFixed(2) }}
+                {{ formatCurrency(Number(order.total_price)) }}
               </td>
               <td
                 class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-textSecondary/70"
@@ -194,30 +194,33 @@ import {
   CreditCard,
   Package,
   Users,
+  Wallet,
 } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 import api from "@/axios.js";
 
 const { t } = useI18n();
 const showToast = inject("showToast");
 const auth = useAuthStore();
+const { formatCurrency } = useCurrency();
 
 const loading = ref(true);
 const recentOrders = ref([]);
 const totals = ref({
   orders: 0,
   revenue: 0,
+  netProfit: 0,
   pending: 0,
   products: 0,
   users: 0,
 });
 
-const generateSparkline = () => {
-  return Array.from({ length: 12 }, (_, i) => ({
+const buildSparkline = (seed) =>
+  Array.from({ length: 10 }, (_, i) => ({
     id: i,
-    height: Math.floor(Math.random() * 60) + 20, // 20% to 80% height
+    height: 26 + ((Math.max(8, Number(seed || 0)) + i * 11) % 54),
   }));
-};
 
 const allStats = computed(() => [
   {
@@ -225,50 +228,61 @@ const allStats = computed(() => [
     label: "admin.totalOrders",
     value: totals.value.orders,
     icon: ShoppingBag,
-    iconBg: "bg-blue-100 dark:bg-blue-900/30",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    neonGlowClass: "group-hover:bg-blue-200 dark:group-hover:bg-blue-800",
-    sparkline: generateSparkline(),
+    iconBg: "bg-primary-100 dark:bg-primary-900/30",
+    iconColor: "text-primary-700 dark:text-primary-300",
+    neonGlowClass: "group-hover:bg-primary-200 dark:group-hover:bg-primary-800",
+    sparkline: buildSparkline(totals.value.orders),
   },
   {
     key: "revenue",
     label: "admin.totalRevenue",
-    value: `$${Number(totals.value.revenue).toFixed(0)}`,
+    value: formatCurrency(totals.value.revenue, { minimumFractionDigits: 0 }),
     icon: BarChart2,
+    iconBg: "bg-[#efe3ce] dark:bg-[#4d3c2e]",
+    iconColor: "text-[#8d6431] dark:text-[#e5c493]",
+    neonGlowClass: "group-hover:bg-[#e2cbab] dark:group-hover:bg-[#6b5139]",
+    sparkline: buildSparkline(totals.value.revenue),
+  },
+  {
+    key: "netProfit",
+    label: "admin.totalNetProfit",
+    value: formatCurrency(totals.value.netProfit, { minimumFractionDigits: 0 }),
+    icon: Wallet,
     iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-    neonGlowClass: "group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800",
-    sparkline: generateSparkline(),
+    iconColor: "text-emerald-700 dark:text-emerald-300",
+    neonGlowClass:
+      "group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800",
+    sparkline: buildSparkline(totals.value.netProfit),
   },
   {
     key: "pending",
     label: "admin.pendingPayments",
     value: totals.value.pending,
     icon: CreditCard,
-    iconBg: "bg-amber-100 dark:bg-amber-900/30",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    neonGlowClass: "group-hover:bg-amber-200 dark:group-hover:bg-amber-800",
-    sparkline: generateSparkline(),
+    iconBg: "bg-[#f1dcc0] dark:bg-[#574028]",
+    iconColor: "text-[#8a5b20] dark:text-[#e3bc79]",
+    neonGlowClass: "group-hover:bg-[#e3c091] dark:group-hover:bg-[#73532f]",
+    sparkline: buildSparkline(totals.value.pending),
   },
   {
     key: "products",
     label: "admin.totalProducts",
     value: totals.value.products,
     icon: Package,
-    iconBg: "bg-violet-100 dark:bg-violet-900/30",
-    iconColor: "text-violet-600 dark:text-violet-400",
-    neonGlowClass: "group-hover:bg-violet-200 dark:group-hover:bg-violet-800",
-    sparkline: generateSparkline(),
+    iconBg: "bg-[#e7d6bd] dark:bg-[#463628]",
+    iconColor: "text-[#7a5630] dark:text-[#d8bd95]",
+    neonGlowClass: "group-hover:bg-[#dcc2a1] dark:group-hover:bg-[#624730]",
+    sparkline: buildSparkline(totals.value.products),
   },
   {
     key: "users",
     label: "admin.totalUsers",
     value: totals.value.users,
     icon: Users,
-    iconBg: "bg-rose-100 dark:bg-rose-900/30",
-    iconColor: "text-rose-600 dark:text-rose-400",
-    neonGlowClass: "group-hover:bg-rose-200 dark:group-hover:bg-rose-800",
-    sparkline: generateSparkline(),
+    iconBg: "bg-[#f3e7d3] dark:bg-[#514032]",
+    iconColor: "text-[#8b6947] dark:text-[#ebd4b2]",
+    neonGlowClass: "group-hover:bg-[#e7d4bc] dark:group-hover:bg-[#6d5641]",
+    sparkline: buildSparkline(totals.value.users),
     ownerOnly: true,
   },
 ]);
@@ -279,45 +293,35 @@ const visibleStats = computed(() =>
 
 // ── Badge helpers ───────────────────────────────────────────────
 function statusClass(s) {
-  return s === "completed"
-    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+  return s === "completed" || s === "delivered"
+    ? "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300"
+    : s === "returned"
+      ? "bg-[#efe5d2] text-[#8f6f41] dark:bg-[#4d3f2f] dark:text-[#e6c99b]"
     : s === "cancelled"
       ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      : "bg-[#efe3ce] text-[#8d6431] dark:bg-[#4d3c2e] dark:text-[#e5c493]";
 }
 function paymentClass(s) {
   return s === "paid"
-    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+    ? "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300"
     : s === "pending_verification"
-      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-      : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      ? "bg-[#e9ddc8] text-[#75522a] dark:bg-[#4f3b2b] dark:text-[#e5c493]"
+      : "bg-[#ede3d3] text-[#755d44] dark:bg-[#433326] dark:text-[#d4b897]";
 }
 
 // ── Fetch all dashboard data in parallel ────────────────────────
 onMounted(async () => {
   try {
-    const requests = [
-      api.get("/orders", { params: { page: 1, limit: 10 } }),
-      api.get("/products", { params: { page: 1, limit: 1 } }),
-      api.get("/payments/admin/pending", { params: { page: 1, limit: 1 } }),
-    ];
-    if (auth.isOwner) {
-      requests.push(api.get("/users", { params: { page: 1, limit: 1 } }));
-    }
+    const { data } = await api.get("/dashboard/stats");
+    const stats = data.data || {};
 
-    const [ordersRes, productsRes, paymentsRes, usersRes] =
-      await Promise.all(requests);
-
-    const allOrders = ordersRes.data.data;
-    recentOrders.value = allOrders.slice(0, 10);
-    totals.value.orders = ordersRes.data.pagination?.total || allOrders.length;
-    totals.value.revenue = allOrders.reduce(
-      (sum, o) => sum + Number(o.total_price || 0),
-      0,
-    );
-    totals.value.products = productsRes.data.pagination?.total || 0;
-    totals.value.pending = paymentsRes.data.pagination?.total || 0;
-    totals.value.users = usersRes?.data.pagination?.total || 0;
+    recentOrders.value = stats.recent_orders || [];
+    totals.value.orders = Number(stats.total_orders || 0);
+    totals.value.revenue = Number(stats.delivered_revenue || 0);
+    totals.value.netProfit = Number(stats.delivered_net_profit || 0);
+    totals.value.products = Number(stats.total_products || 0);
+    totals.value.pending = Number(stats.pending_payments || 0);
+    totals.value.users = Number(stats.total_users || 0);
   } catch (e) {
     showToast?.(e.response?.data?.message || t("common.error"), "error");
   } finally {

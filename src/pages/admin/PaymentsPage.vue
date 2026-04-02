@@ -71,10 +71,10 @@
                 <div class="text-xs text-textSecondary">{{ proof.email }}</div>
               </td>
               <td class="font-bold text-primary-600 dark:text-primary-400">
-                ${{ Number(proof.total_price).toFixed(2) }}
+                {{ formatCurrency(Number(proof.total_price)) }}
               </td>
               <td class="text-sm text-textSecondary font-medium">
-                ${{ Number(proof.total_price).toFixed(2) }}
+                {{ formatCurrency(Number(proof.total_price)) }}
               </td>
               <td class="text-xs text-textSecondary font-mono">
                 {{ proof.transaction_id || "—" }}
@@ -168,10 +168,12 @@ import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import api from "@/axios.js";
 import { useUI } from "@/composables/useUI.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 const { t } = useI18n();
 const ui = useUI();
 const showToast = ui.showToast;
+const { formatCurrency } = useCurrency();
 
 const proofs = ref([]);
 const loading = ref(true);

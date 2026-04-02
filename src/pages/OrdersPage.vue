@@ -99,19 +99,67 @@
           <li
             v-for="item in order.items"
             :key="item.id"
-            class="flex justify-between text-sm text-gray-600 dark:text-gray-400"
+            class="flex justify-between gap-3 text-sm text-gray-600 dark:text-gray-400"
           >
-            <span
-              >{{
-                $i18n.locale === "ar" && item.product_name_ar
-                  ? item.product_name_ar
-                  : item.product_name
-              }}
-              <span class="text-gray-400">× {{ item.quantity }}</span></span
-            >
-            <span>${{ (Number(item.price) * item.quantity).toFixed(2) }}</span>
+            <div class="min-w-0">
+              <span>
+                {{
+                  $i18n.locale === "ar" && item.product_name_ar
+                    ? item.product_name_ar
+                    : item.product_name
+                }}
+                <span class="text-gray-400">x {{ item.quantity }}</span>
+              </span>
+              <div
+                v-if="item.selected_color_name || item.selected_size"
+                class="mt-1 flex flex-wrap items-center gap-2"
+              >
+                <span
+                  v-if="item.selected_color_name"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  <span
+                    class="h-2.5 w-2.5 rounded-full border border-white/40"
+                    :style="{ backgroundColor: item.selected_color_value || '#c8a96b' }"
+                  ></span>
+                  {{ item.selected_color_name }}
+                </span>
+                <span
+                  v-if="item.selected_size"
+                  class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  {{ item.selected_size }}
+                </span>
+              </div>
+            </div>
+            <span>{{ formatCurrency(Number(item.price) * item.quantity) }}</span>
           </li>
         </ul>
+
+        <div class="grid gap-2 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-sm dark:border-gray-800 dark:bg-gray-900/30">
+          <div class="flex items-center justify-between text-gray-500 dark:text-gray-400">
+            <span>{{ $t("cart.subtotal") }}</span>
+            <span>{{ formatCurrency(Number(order.items_total || order.total_price)) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-500 dark:text-gray-400">
+            <span>{{ $t("checkout.shippingFee") }}</span>
+            <span>{{ formatCurrency(Number(order.shipping_fee || 0)) }}</span>
+          </div>
+          <div
+            v-if="Number(order.discount_amount || 0) > 0"
+            class="flex items-center justify-between text-emerald-600 dark:text-emerald-400"
+          >
+            <span>{{ $t("checkout.discount") }}</span>
+            <span>- {{ formatCurrency(Number(order.discount_amount || 0)) }}</span>
+          </div>
+          <div
+            v-if="order.shipping_governorate"
+            class="flex items-center justify-between text-gray-500 dark:text-gray-400"
+          >
+            <span>{{ $t("checkout.governorate") }}</span>
+            <span>{{ governorateLabel(order.shipping_governorate) }}</span>
+          </div>
+        </div>
 
         <!-- Footer row -->
         <div
@@ -120,9 +168,8 @@
           <span
             class="font-black text-gray-900 dark:text-white flex items-center gap-3"
           >
-            {{ $t("common.total") }}: ${{
-              Number(order.total_price).toFixed(2)
-            }}
+            {{ $t("common.total") }}:
+            {{ formatCurrency(Number(order.total_price)) }}
 
             <!-- Show Payment Method -->
             <span
@@ -165,9 +212,12 @@ import {
 import { useI18n } from "vue-i18n";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import api from "@/axios.js";
+import { getGovernorateDisplayName } from "@/utils/governorates.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const showToast = inject("showToast");
+const { formatCurrency } = useCurrency();
 
 const orders = ref([]);
 const loading = ref(true);
@@ -187,6 +237,8 @@ onMounted(async () => {
 function orderStatusClass(status) {
   if (status === "delivered" || status === "completed")
     return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300";
+  if (status === "returned")
+    return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300";
   if (status === "confirmed")
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   if (status === "out_for_delivery")
@@ -202,6 +254,10 @@ function paymentStatusClass(status) {
   if (status === "pending_verification")
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   return "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400";
+}
+
+function governorateLabel(value) {
+  return getGovernorateDisplayName(value, locale.value);
 }
 
 // ── Order Status Timeline ────────────────────────────────────
@@ -232,17 +288,24 @@ function getTimeline(order) {
   let currentIdx = steps.findIndex((s) => s.id === order.status);
 
   // Handled cancelled/problem separately
-  if (order.status === "cancelled" || order.status === "problem") {
+  if (
+    order.status === "cancelled" ||
+    order.status === "problem" ||
+    order.status === "returned"
+  ) {
     return [
       {
-        icon: markRaw(order.status === "cancelled" ? XCircle : AlertTriangle),
-        label:
+        icon: markRaw(
           order.status === "cancelled"
-            ? t("orders.status.cancelled")
-            : t("orders.status.problem"),
+            ? XCircle
+            : order.status === "returned"
+              ? Package
+              : AlertTriangle,
+        ),
+        label: t(`orders.status.${order.status}`),
         done: false,
         active: true,
-        error: true,
+        error: order.status !== "returned",
       },
     ];
   }
@@ -257,3 +320,4 @@ function getTimeline(order) {
   }));
 }
 </script>
+

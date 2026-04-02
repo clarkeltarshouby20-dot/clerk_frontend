@@ -52,7 +52,7 @@
           <div class="flex gap-2">
             <button
               @click="openModal(coupon)"
-              class="p-2 rounded-xl bg-background hover:bg-primary-50 dark:hover:bg-primary-900/20 text-textSecondary hover:text-primary-600 transition-colors shadow-sm"
+              class="p-2 rounded-xl bg-background hover:bg-primary-50 dark:hover:bg-primary-900/20 text-textSecondary hover:text-primary-700 dark:hover:text-primary-300 transition-colors shadow-sm"
             >
               <Edit2 class="w-4 h-4" />
             </button>
@@ -69,12 +69,12 @@
           <div class="flex items-center justify-between text-sm">
             <span class="text-textSecondary font-bold underline decoration-primary-500/30">{{ $t('admin.coupons.discount') || 'Value' }}</span>
             <span class="font-black text-primary-600">
-              {{ coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : `$${coupon.discount_value}` }}
+              {{ coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : formatCurrency(coupon.discount_value) }}
             </span>
           </div>
           <div class="flex items-center justify-between text-sm">
             <span class="text-textSecondary font-bold underline decoration-primary-500/30">{{ $t('admin.coupons.minOrder') || 'Min. Order' }}</span>
-            <span class="font-bold text-textPrimary">${{ coupon.min_order_amount }}</span>
+            <span class="font-bold text-textPrimary">{{ formatCurrency(coupon.min_order_amount) }}</span>
           </div>
           <div v-if="coupon.expiry_date" class="flex items-center justify-between text-sm">
             <span class="text-textSecondary font-bold underline decoration-primary-500/30">{{ $t('admin.coupons.expiry') || 'Expires' }}</span>
@@ -102,19 +102,32 @@
 
     <!-- Create/Edit Modal -->
     <Transition name="fade">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div @click.stop class="card w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
-          <div class="p-6 border-b border-borderThin flex items-center justify-between bg-surface/50">
+      <div
+        v-if="showModal"
+        class="admin-modal-shell"
+        @click.self="showModal = false"
+      >
+        <div
+          @click.stop
+          class="admin-modal-panel max-w-2xl"
+        >
+          <div class="admin-modal-header">
+            <div>
             <h3 class="text-lg font-black text-textPrimary uppercase tracking-widest">
               {{ editingId ? ($t('admin.coupons.editTitle') || "Edit Coupon") : ($t('admin.coupons.addTitle') || "New Coupon") }}
             </h3>
-            <button @click="showModal = false" class="p-2 hover:bg-background rounded-full transition-colors">
+              <p class="mt-1 text-sm normal-case tracking-normal text-textSecondary">
+                {{ $t("admin.coupons.subtitle") || "Create and manage discount codes for your customers." }}
+              </p>
+            </div>
+            <button @click="showModal = false" class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl text-textSecondary transition hover:bg-surface">
               <X class="w-5 h-5" />
             </button>
           </div>
 
-          <form @submit.prevent="saveCoupon" class="p-5 sm:p-8 space-y-6 overflow-y-auto flex-1">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <form @submit.prevent="saveCoupon">
+            <div class="admin-modal-body">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <!-- Code -->
               <div class="sm:col-span-2">
                 <label class="form-label font-black text-[10px] uppercase tracking-widest text-textSecondary mb-2 block">
@@ -136,7 +149,7 @@
                 </label>
                 <select v-model="form.discount_type" class="form-input">
                   <option value="percentage">{{ $t('admin.coupons.percentage') || "Percentage (%)" }}</option>
-                  <option value="fixed">{{ $t('admin.coupons.fixed') || "Fixed Amount ($)" }}</option>
+                  <option value="fixed">{{ $t('admin.coupons.fixed') || `Fixed Amount (${currencyLabel})` }}</option>
                 </select>
               </div>
 
@@ -207,19 +220,20 @@
                 </label>
               </div>
             </div>
+            </div>
 
-            <div class="flex justify-end gap-4 pt-4 border-t border-borderThin">
+            <div class="admin-modal-footer">
               <button
                 type="button"
                 @click="showModal = false"
-                class="btn-secondary px-6"
+                class="btn-secondary w-full px-6 sm:w-auto"
               >
                 {{ $t('common.cancel') }}
               </button>
               <button
                 type="submit"
                 :disabled="saving"
-                class="btn-primary min-w-[120px]"
+                class="btn-primary min-w-[120px] w-full sm:w-auto"
               >
                  <LoadingSpinner v-if="saving" :size="18" />
                  <template v-else>
@@ -249,9 +263,11 @@ import { Plus, Edit2, Trash2, Save, X, Ticket } from "lucide-vue-next";
 import { useCouponStore } from "@/stores/coupon.js";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 const couponStore = useCouponStore();
 const showToast = inject("showToast");
+const { currencyLabel, formatCurrency } = useCurrency();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);

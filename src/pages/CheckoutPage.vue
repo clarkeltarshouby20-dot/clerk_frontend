@@ -35,14 +35,19 @@
           </div>
 
           <div class="space-y-6">
-            <!-- Full Name (Read-Only from Profile) -->
+            <!-- Full Name -->
             <div>
               <label class="form-label font-bold text-xs uppercase tracking-widest text-textSecondary mb-2">
                 {{ $t("checkout.fullName") }}
               </label>
-              <div class="input-field bg-surface text-textSecondary cursor-not-allowed flex items-center gap-3">
-                <User class="w-4 h-4 text-textSecondary/70" />
-                <span class="font-medium text-sm">{{ authStore.user?.name || "Loading..." }}</span>
+              <div class="relative">
+                <input
+                  v-model="form.full_name"
+                  type="text"
+                  :placeholder="$t('checkout.fullName') || 'Full Name'"
+                  class="input-field w-full bg-surface pe-11 text-sm transition-all duration-300"
+                />
+                <User class="w-4 h-4 absolute top-1/2 -translate-y-1/2 right-4 text-textSecondary/70 rtl:left-4 rtl:right-auto" />
               </div>
             </div>
 
@@ -88,6 +93,76 @@
                 :placeholder="$t('checkout.addressPlaceholder') || 'Street Name, Building Number, Apartment, City, Governorate'"
                 class="input-field w-full resize-none bg-surface text-sm"
               ></textarea>
+            </div>
+
+            <div>
+              <label class="form-label font-bold text-xs uppercase tracking-widest text-textSecondary mb-2">
+                {{ $t("checkout.governorate") }} <span class="text-red-500">*</span>
+              </label>
+              <div
+                ref="governorateFieldRef"
+                class="relative rounded-3xl border border-borderThin bg-surface p-3 shadow-sm"
+              >
+                <div class="relative">
+                  <MapPin class="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-4 text-textSecondary/70 rtl:right-4 rtl:left-auto" />
+                  <input
+                    v-model="governorateSearch"
+                    type="text"
+                    :placeholder="$t('checkout.governorateSearchPlaceholder')"
+                    class="input-field w-full bg-background ps-11 pe-12 text-sm"
+                    @focus="openGovernorateList"
+                    @input="openGovernorateList"
+                  />
+                  <button
+                    type="button"
+                    class="absolute top-1/2 -translate-y-1/2 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface text-textSecondary transition-colors hover:text-primary-500 rtl:left-3 rtl:right-auto"
+                    @click="toggleGovernorateList"
+                  >
+                    <ChevronDown
+                      class="h-4 w-4 transition-transform duration-200"
+                      :class="governorateDropdownOpen ? 'rotate-180' : ''"
+                    />
+                  </button>
+                </div>
+
+                <Transition name="fade">
+                  <div
+                    v-if="governorateDropdownOpen"
+                    class="mt-3 overflow-hidden rounded-[1.6rem] border border-borderThin bg-background shadow-[0_24px_55px_-30px_rgba(84,58,30,0.4)]"
+                  >
+                    <div class="max-h-72 overflow-y-auto subtle-scrollbar p-2 space-y-2">
+                      <button
+                        v-for="gov in filteredGovernorates"
+                        :key="gov.key"
+                        type="button"
+                        class="flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-start transition-all"
+                        :class="form.shipping_governorate === gov.key ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/20 shadow-sm' : 'border-transparent bg-background hover:border-primary-500/20 hover:bg-surface'"
+                        @click="selectGovernorate(gov)"
+                      >
+                        <div>
+                          <p class="text-sm font-bold text-textPrimary">{{ governorateLabel(gov.key) }}</p>
+                          <p class="mt-1 text-[11px] font-medium text-textSecondary">
+                            {{ $t("checkout.shippingFee") }}: {{ formatCurrency(gov.value) }}
+                          </p>
+                        </div>
+                        <span
+                          class="inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest"
+                          :class="form.shipping_governorate === gov.key ? 'bg-primary-500 text-white' : 'bg-surface text-textSecondary'"
+                        >
+                          {{ form.shipping_governorate === gov.key ? $t("checkout.selectedGovernorate") : $t("checkout.selectGovernorate") }}
+                        </span>
+                      </button>
+
+                      <div
+                        v-if="filteredGovernorates.length === 0"
+                        class="rounded-2xl border border-dashed border-borderThin bg-background px-4 py-6 text-center text-sm font-medium text-textSecondary"
+                      >
+                        {{ $t("checkout.noGovernoratesFound") }}
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
             </div>
           </div>
         </div>
@@ -228,9 +303,9 @@
           <!-- Items List within Summary -->
           <div class="p-4 sm:p-6 max-h-[350px] overflow-y-auto subtle-scrollbar border-b border-borderThin bg-background/50">
             <ul class="space-y-4">
-              <li v-for="item in cart.items" :key="item.id" class="flex gap-4 p-2 hover:bg-surface rounded-xl transition-colors">
+              <li v-for="item in cart.items" :key="item.cart_key" class="flex gap-4 p-2 hover:bg-surface rounded-xl transition-colors">
                 <img
-                  :src="item.main_image"
+                  :src="item.selected_image || item.main_image"
                   class="w-16 h-16 rounded-xl object-cover bg-surface border border-borderThin shadow-sm shrink-0"
                   @error="(e) => (e.target.src = 'https://placehold.co/100x100')"
                 />
@@ -238,12 +313,33 @@
                   <span class="text-sm font-bold text-textPrimary line-clamp-2 leading-snug mb-1">
                     {{ ui.locale === "ar" && item.name_ar ? item.name_ar : item.name }}
                   </span>
+                  <div
+                    v-if="item.selected_color_name || item.selected_size"
+                    class="mb-2 flex flex-wrap items-center gap-2"
+                  >
+                    <span
+                      v-if="item.selected_color_name"
+                      class="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-textSecondary"
+                    >
+                      <span
+                        class="h-2.5 w-2.5 rounded-full border border-white/50"
+                        :style="{ backgroundColor: item.selected_color_value || '#c8a96b' }"
+                      ></span>
+                      {{ item.selected_color_name }}
+                    </span>
+                    <span
+                      v-if="item.selected_size"
+                      class="rounded-full bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-textSecondary"
+                    >
+                      {{ item.selected_size }}
+                    </span>
+                  </div>
                   <div class="flex items-center justify-between mt-auto">
                     <span class="text-xs text-textSecondary font-bold tracking-wider uppercase">
                       {{ $t("checkout.qty") }}: {{ item.quantity }}
                     </span>
                     <span class="font-black text-sm text-primary-600 dark:text-primary-400">
-                      ${{ (Number(item.price) * item.quantity).toFixed(2) }}
+                      {{ formatCurrency(Number(item.price) * item.quantity) }}
                     </span>
                   </div>
                 </div>
@@ -298,24 +394,36 @@
           <div class="p-6 sm:p-8 bg-background space-y-4 relative">
             <div class="flex justify-between text-sm text-textSecondary font-bold">
               <span>{{ $t("cart.subtotal") }}</span>
-              <span class="text-textPrimary">${{ cart.total.toFixed(2) }}</span>
+              <span class="text-textPrimary">{{ formatCurrency(cart.total) }}</span>
             </div>
             <div class="flex justify-between text-sm text-textSecondary font-bold">
               <span>{{ $t("checkout.shippingFee") }}</span>
-              <span class="text-emerald-500 uppercase tracking-widest">{{ $t("checkout.free") }}</span>
+              <span class="text-textPrimary">
+                {{ shippingFee > 0 ? formatCurrency(shippingFee) : $t("checkout.free") }}
+              </span>
             </div>
 
             <!-- Discount Row -->
             <Transition name="fade">
               <div v-if="couponStore.activeCoupon" class="flex justify-between text-sm text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/10 p-3 rounded-xl border border-dashed border-emerald-200 dark:border-emerald-800">
                 <span>{{ $t("checkout.discount") || "Discount" }} ({{ couponStore.activeCoupon.code }})</span>
-                <span>-${{ couponStore.activeCoupon.discount_amount.toFixed(2) }}</span>
+                <span>- {{ formatCurrency(couponStore.activeCoupon.discount_amount) }}</span>
               </div>
             </Transition>
 
             <div class="border-t border-borderThin pt-4 mt-2 flex justify-between items-center bg-surface p-4 rounded-2xl shadow-sm">
               <span class="text-base font-extrabold text-textPrimary uppercase tracking-widest">{{ $t("common.total") }}</span>
-              <span class="text-3xl font-black text-primary-600 dark:text-primary-400 drop-shadow-sm">${{ finalTotal.toFixed(2) }}</span>
+              <span class="text-3xl font-black text-primary-600 dark:text-primary-400 drop-shadow-sm">{{ formatCurrency(finalTotal) }}</span>
+            </div>
+
+            <div
+              v-if="selectedGovernorate"
+              class="rounded-2xl border border-borderThin bg-background px-4 py-3 text-xs font-bold text-textSecondary"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <span>{{ $t("checkout.selectedGovernorateLabel") }}</span>
+                <span class="text-textPrimary">{{ governorateLabel(selectedGovernorate.key) }}</span>
+              </div>
             </div>
 
             <!-- Error Alert -->
@@ -351,7 +459,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, inject, computed, onMounted } from "vue";
+import { ref, reactive, inject, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth.js";
@@ -376,6 +484,7 @@ import {
   Ticket,
   X,
   Image as ImageIcon,
+  ChevronDown,
 } from "lucide-vue-next";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import ImageUploadSingle from "@/components/ImageUploadSingle.vue";
@@ -384,7 +493,12 @@ import { useUiStore } from "@/stores/ui.js";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useCouponStore } from "@/stores/coupon.js";
 import { useConversion } from "@/composables/useConversion.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 import api from "@/axios.js";
+import {
+  getGovernorateDisplayName,
+  matchesGovernorateQuery,
+} from "@/utils/governorates.js";
 
 const { trackPurchase } = useConversion();
 const { t } = useI18n();
@@ -394,6 +508,7 @@ const ui = useUiStore();
 const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
 const couponStore = useCouponStore();
+const { formatCurrency } = useCurrency();
 const showToast = inject("showToast");
 
 const loading = ref(false);
@@ -403,11 +518,16 @@ const error = ref("");
 const paymentMethod = ref("cod");
 
 const form = reactive({
+  full_name: "",
+  shipping_governorate: "",
   shipping_phone: "",
   shipping_address: "",
   reference: "",
   screenshotFile: null,
 });
+const governorateSearch = ref("");
+const governorateDropdownOpen = ref(false);
+const governorateFieldRef = ref(null);
 
 // removed previewUrl, fileInput refs
 
@@ -432,21 +552,46 @@ function validatePhone() {
 }
 
 const isFormValid = computed(() => {
+  if (form.full_name.trim().length < 2) return false;
+  if (!form.shipping_governorate.trim()) return false;
   if (!phoneValid.value) return false;
   if (form.shipping_address.trim().length < 5) return false;
   if ((paymentMethod.value === "wallet" || paymentMethod.value === "instapay") && !form.screenshotFile) return false;
   return true;
 });
 
+const availableGovernorates = computed(() =>
+  settingsStore.shippingGovernorates.filter((item) => item.is_active !== false),
+);
+
+const filteredGovernorates = computed(() => {
+  const query = governorateSearch.value.trim().toLowerCase();
+  if (!query) return availableGovernorates.value;
+  return availableGovernorates.value.filter((item) =>
+    matchesGovernorateQuery(item.key, query),
+  );
+});
+
+const selectedGovernorate = computed(() =>
+  availableGovernorates.value.find((item) => item.key === form.shipping_governorate) || null,
+);
+
+const shippingFee = computed(() => Number(selectedGovernorate.value?.value || 0));
+
 const finalTotal = computed(() => {
   const discount = couponStore.activeCoupon?.discount_amount || 0;
-  return Math.max(0, cart.total - discount);
+  return Math.max(0, cart.total - discount) + shippingFee.value;
 });
 
 onMounted(async () => {
   await settingsStore.fetchSettings();
   couponStore.clearActiveCoupon();
   // Phone number now explicitly left empty for user to fill
+  document.addEventListener("click", handleOutsideGovernorateClick);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleOutsideGovernorateClick);
 });
 
 async function applyCoupon() {
@@ -467,6 +612,69 @@ function removeCoupon() {
   couponCode.value = "";
 }
 
+function selectGovernorate(governorate) {
+  form.shipping_governorate = governorate.key;
+  governorateSearch.value = governorateLabel(governorate.key);
+  governorateDropdownOpen.value = false;
+}
+
+function governorateLabel(value) {
+  return getGovernorateDisplayName(value, ui.locale);
+}
+
+function openGovernorateList() {
+  governorateDropdownOpen.value = true;
+}
+
+function closeGovernorateList() {
+  governorateDropdownOpen.value = false;
+}
+
+function toggleGovernorateList() {
+  governorateDropdownOpen.value = !governorateDropdownOpen.value;
+}
+
+function resolveGovernorateKey() {
+  if (selectedGovernorate.value?.key) {
+    return selectedGovernorate.value.key;
+  }
+
+  const typedValue = String(governorateSearch.value || "").trim();
+  if (!typedValue) return "";
+
+  const match = availableGovernorates.value.find((item) => {
+    const display = governorateLabel(item.key);
+    return (
+      item.key === typedValue ||
+      display === typedValue
+    );
+  });
+
+  return match?.key || "";
+}
+
+watch(governorateSearch, (value) => {
+  const normalized = String(value || "").trim();
+  if (!normalized) {
+    form.shipping_governorate = "";
+    governorateDropdownOpen.value = true;
+    return;
+  }
+
+  if (
+    selectedGovernorate.value &&
+    normalized !== governorateLabel(selectedGovernorate.value.key)
+  ) {
+    form.shipping_governorate = "";
+  }
+});
+
+function handleOutsideGovernorateClick(event) {
+  if (!governorateFieldRef.value?.contains(event.target)) {
+    closeGovernorateList();
+  }
+}
+
 // function onFileSelect, onDrop, setFile removed in favor of ImageUploadSingle
 
 async function placeOrder() {
@@ -475,6 +683,12 @@ async function placeOrder() {
   error.value = "";
   loading.value = true;
   try {
+    const governorateKey = resolveGovernorateKey();
+    if (!governorateKey) {
+      error.value = t("checkout.governorate") + " " + (t("errors.required") || "is required.");
+      return;
+    }
+
     let payload;
     let headers = {};
 
@@ -483,6 +697,8 @@ async function placeOrder() {
       payload.append("items", JSON.stringify(cart.items));
       payload.append("total_price", finalTotal.value);
       payload.append("payment_method", paymentMethod.value);
+      payload.append("full_name", form.full_name);
+      payload.append("shipping_governorate", governorateKey);
       payload.append("shipping_phone", form.shipping_phone);
       payload.append("shipping_address", form.shipping_address);
       payload.append("reference", form.reference);
@@ -494,6 +710,8 @@ async function placeOrder() {
         items: cart.items,
         total_price: finalTotal.value,
         payment_method: paymentMethod.value,
+        full_name: form.full_name,
+        shipping_governorate: governorateKey,
         shipping_phone: form.shipping_phone,
         shipping_address: form.shipping_address,
         coupon_code: couponStore.activeCoupon?.code || "",

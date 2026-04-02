@@ -61,7 +61,7 @@
         <div class="flex flex-col gap-2">
           <button
             @click="openEdit(cat)"
-            class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+            class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20"
           >
             <Edit2 class="w-4 h-4" />
           </button>
@@ -88,34 +88,34 @@
       <Transition name="modal">
         <div
           v-if="formModal"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          class="admin-modal-shell"
+          @click.self="formModal = false"
         >
-          <div
-            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            @click="formModal = false"
-          />
-          <div
-            class="relative bg-surface rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-bounce-in"
-          >
-            <div class="flex items-center justify-between mb-5">
-              <h3 class="font-bold text-lg text-textPrimary tracking-tight">
-                {{
-                  editingCat
-                    ? $t("admin.editCategory")
-                    : $t("admin.addCategory")
-                }}
-              </h3>
+          <div class="admin-modal-panel max-w-2xl">
+            <div class="admin-modal-header">
+              <div>
+                <h3 class="text-lg font-bold tracking-tight text-textPrimary sm:text-xl">
+                  {{
+                    editingCat
+                      ? $t("admin.editCategory")
+                      : $t("admin.addCategory")
+                  }}
+                </h3>
+                <p class="mt-1 text-sm text-textSecondary">
+                  {{ $t("admin.categories") }}
+                </p>
+              </div>
               <button
                 @click="formModal = false"
-                class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-textSecondary hover:text-textSecondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl text-textSecondary transition hover:bg-surface"
               >
                 <X class="w-5 h-5" />
               </button>
             </div>
 
-            <form @submit.prevent="saveCategory" class="space-y-5 max-h-[70vh] overflow-y-auto px-1 -mx-1 scrollbar-thin">
-              <!-- Name Row -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form @submit.prevent="saveCategory">
+              <div class="admin-modal-body space-y-5">
+                <div class="admin-form-grid">
                 <div>
                   <label class="form-label text-xs uppercase tracking-wider opacity-70 mb-1.5">{{ $t("common.name") }} *</label>
                   <input v-model="form.name" required class="form-input shadow-none focus:ring-1" />
@@ -126,8 +126,7 @@
                 </div>
               </div>
 
-              <!-- Meta Row -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="admin-form-grid">
                 <div>
                   <label class="form-label text-xs uppercase tracking-wider opacity-70 mb-1.5">{{ $t("admin.slug") }}</label>
                   <input
@@ -147,8 +146,7 @@
                 </div>
               </div>
 
-              <!-- Image Section -->
-              <div class="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-2xl border border-borderThin">
+              <div class="admin-panel-muted p-4">
                 <ImageUploadSingle
                   v-model="form.imageFile"
                   :label="$t('common.image')"
@@ -158,7 +156,7 @@
                 />
               </div>
 
-              <div class="flex items-center justify-between bg-surface rounded-xl p-3 border border-borderThin shadow-sm">
+              <div class="admin-panel-muted flex items-center justify-between p-3">
                 <label class="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
@@ -175,16 +173,17 @@
                   {{ formError }}
                 </p>
               </div>
+              </div>
 
-              <div class="flex gap-3 justify-end sticky bottom-0 bg-surface/80 backdrop-blur-md pt-4 mt-2">
+              <div class="admin-modal-footer">
                 <button
                   type="button"
                   @click="formModal = false"
-                  class="btn-secondary px-6"
+                  class="btn-secondary w-full px-6 sm:w-auto"
                 >
                   {{ $t("common.cancel") }}
                 </button>
-                <button type="submit" :disabled="saving" class="btn-primary min-w-[120px]">
+                <button type="submit" :disabled="saving" class="btn-primary min-w-[120px] w-full sm:w-auto">
                   <LoadingSpinner v-if="saving" :size="18" />
                   {{ editingCat ? $t("common.update") : $t("common.create") }}
                 </button>

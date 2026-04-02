@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const props = defineProps({
@@ -99,6 +99,18 @@ const activeIndex = ref(
 
 const activeImage = computed(
   () => props.images[activeIndex.value] || { image_url: "" },
+);
+
+watch(
+  () => props.images,
+  (images) => {
+    const nextIndex = Math.max(
+      images.findIndex((image) => image.is_main === 1),
+      0,
+    );
+    activeIndex.value = nextIndex;
+  },
+  { deep: true },
 );
 
 function prev() {

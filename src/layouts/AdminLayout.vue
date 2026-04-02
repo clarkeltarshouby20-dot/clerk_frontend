@@ -19,17 +19,17 @@
         class="flex items-center gap-4 px-6 py-6 border-b border-borderThin shrink-0 h-[80px]"
       >
         <div
-          class="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center shrink-0"
+          class="w-8 h-8 rounded-xl bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center shrink-0 border border-primary-300/40 dark:border-primary-700/30"
         >
           <LayoutDashboard class="w-5 h-5" />
         </div>
         <span
-          class="font-extrabold text-textPrimary text-xl tracking-wide uppercase transition-opacity duration-300 whitespace-nowrap"
+          class="brand-display font-semibold text-textPrimary text-2xl tracking-[0.12em] uppercase transition-opacity duration-300 whitespace-nowrap"
           :class="
             isSidebarHovered || sidebarOpen ? 'opacity-100' : 'lg:opacity-0'
           "
         >
-          Admin
+          {{ dashboardLabel }}
         </span>
         <!-- Close button (mobile) -->
         <button
@@ -46,9 +46,9 @@
           <RouterLink
             :to="link.to"
             @click="sidebarOpen = false"
-            class="flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-bold text-textSecondary hover:bg-primary-50 dark:hover:bg-primary-900/10 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 relative group"
-            active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 shadow-sm"
-            exact-active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 shadow-sm"
+            class="flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-bold text-textSecondary hover:bg-primary-50/70 dark:hover:bg-primary-900/10 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-300 relative group"
+            active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm"
+            exact-active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm"
             :title="link.label"
           >
             <component
@@ -77,16 +77,16 @@
               isSidebarHovered || sidebarOpen ? 'opacity-100' : 'lg:opacity-0'
             "
           >
-            Owner
+            {{ $t("admin.roleBadge.owner") }}
           </p>
           <RouterLink
             v-for="link in ownerLinks"
             :key="link.to"
             :to="link.to"
             @click="sidebarOpen = false"
-            class="flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-bold text-violet-600/70 dark:text-violet-400/70 hover:bg-violet-50 dark:hover:bg-violet-900/10 hover:text-violet-600 dark:hover:text-violet-400 transition-all duration-300 relative group"
-            active-class="bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 shadow-sm"
-            exact-active-class="bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 shadow-sm"
+            class="flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-bold text-primary-700/80 dark:text-primary-300/80 hover:bg-primary-50 dark:hover:bg-primary-900/12 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-300 relative group"
+            active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm"
+            exact-active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm"
             :title="link.label"
           >
             <component
@@ -192,7 +192,7 @@
     <Transition name="fade">
       <div
         v-if="sidebarOpen"
-        class="fixed inset-0 z-[45] bg-black/60 lg:hidden backdrop-blur-sm"
+        class="fixed inset-0 z-[45] bg-[#1f1611]/65 lg:hidden backdrop-blur-sm"
         @click="sidebarOpen = false"
       />
     </Transition>
@@ -204,7 +204,7 @@
     >
       <!-- Top bar -->
       <header
-        class="sticky top-0 z-10 bg-surface/80 backdrop-blur-md border-b border-borderThin px-4 sm:px-8 py-4 flex items-center gap-4 h-[80px]"
+        class="sticky top-0 z-10 bg-background/85 backdrop-blur-md border-b border-borderThin px-4 sm:px-8 py-4 flex items-center gap-4 h-[80px]"
       >
         <!-- Hamburger (mobile) -->
         <button
@@ -214,7 +214,7 @@
           <Menu class="w-5 h-5" />
         </button>
         <h1
-          class="text-xl sm:text-2xl font-extrabold text-textPrimary capitalize tracking-tight"
+          class="brand-display text-2xl sm:text-3xl font-semibold text-textPrimary capitalize tracking-[0.04em]"
         >
           {{ pageTitle }}
         </h1>
@@ -223,16 +223,14 @@
           <span
             :class="[
               'badge text-[10px] uppercase font-extrabold tracking-widest px-3 py-1.5 shadow-sm',
-              auth.isOwner
-                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                : 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400',
+              auth.user?.role === 'owner'
+                ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-300/50 dark:border-primary-700/30'
+                : auth.user?.role === 'admin'
+                  ? 'bg-[#eadcc2] text-[#75522a] dark:bg-[#4a3828] dark:text-[#e8cca0] border border-primary-300/40 dark:border-[#8d6a40]/30'
+                  : 'bg-[#ede3d3] text-[#755d44] dark:bg-[#433326] dark:text-[#d4b897] border border-borderThin',
             ]"
           >
-            {{
-              auth.isOwner
-                ? $t("admin.roleBadge.owner")
-                : $t("admin.roleBadge.admin")
-            }}
+            {{ roleLabel }}
           </span>
           <span
             class="text-sm font-bold text-textSecondary bg-background px-4 py-2 rounded-full hidden sm:block shadow-sm border border-borderThin"
@@ -255,7 +253,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
@@ -265,6 +263,7 @@ import {
   Ticket,
   ShoppingBag,
   CreditCard,
+  Truck,
   Settings,
   Lock,
   Sun,
@@ -292,6 +291,10 @@ const cart = useCartStore();
 const sidebarOpen = ref(false);
 const isSidebarHovered = ref(false);
 
+onMounted(() => {
+  auth.refreshSession();
+});
+
 const allNavLinks = computed(() => [
   { to: "/admin", icon: LayoutDashboard, label: t("admin.dashboard") },
   { to: "/admin/products", icon: Package, label: t("admin.products") },
@@ -299,6 +302,7 @@ const allNavLinks = computed(() => [
   { to: "/admin/coupons", icon: Ticket, label: t("admin.coupons.title") || "Coupons" },
   { to: "/admin/orders", icon: ShoppingBag, label: t("admin.orders") },
   { to: "/admin/payments", icon: CreditCard, label: t("admin.payments") },
+  { to: "/admin/shipping", icon: Truck, label: t("settings.sectionShipping") },
   {
     to: "/admin/reviews",
     icon: MessageSquare,
@@ -327,8 +331,20 @@ const publicLinks = computed(() =>
   allNavLinks.value.filter((l) => !l.ownerOnly),
 );
 const ownerLinks = computed(() => allNavLinks.value.filter((l) => l.ownerOnly));
+const visibleNavLinks = computed(() =>
+  allNavLinks.value.filter((link) => !link.ownerOnly || auth.isOwner),
+);
 
 const navLinks = allNavLinks;
+
+const roleLabel = computed(() => {
+  const role = auth.user?.role || "admin";
+  return t(`admin.roleBadge.${role}`);
+});
+
+const dashboardLabel = computed(() =>
+  auth.user?.role === "owner" ? "Owner" : "Admin",
+);
 
 const pageTitle = computed(() => {
   const found = navLinks.value.find((l) => l.to === route.path);

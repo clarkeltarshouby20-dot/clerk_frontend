@@ -29,6 +29,7 @@ const AdminUsers = () => import("@/pages/admin/UsersPage.vue");
 const AdminReviews = () => import("@/pages/admin/ReviewsPage.vue");
 const AdminMessages = () => import("@/pages/admin/MessagesPage.vue");
 const AdminCoupons = () => import("@/pages/admin/CouponsPage.vue");
+const AdminShipping = () => import("@/pages/admin/ShippingPage.vue");
 
 const routes = [
   // ── Maintenance / Error Boundary ──────────────────────────
@@ -140,10 +141,15 @@ const routes = [
         component: AdminPayments,
       },
       {
+        path: "shipping",
+        name: "admin-shipping",
+        component: AdminShipping,
+      },
+      {
         path: "settings",
         name: "admin-settings",
         component: AdminSettings,
-        meta: { requiresAuth: true, requiresAdmin: true },
+        meta: { requiresAuth: true, requiresOwner: true },
       },
       {
         path: "users",

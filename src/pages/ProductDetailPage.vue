@@ -25,7 +25,7 @@
       >
         <!-- Left: Image Gallery Component -->
         <div>
-          <ImageGallery :images="product.images" />
+          <ImageGallery :images="displayImages" />
         </div>
 
         <!-- Right: Product info (Sticky) -->
@@ -72,11 +72,11 @@
           <!-- Price & Discount -->
           <div class="flex items-center gap-4 mb-8 bg-surface p-5 rounded-[2.5rem] border border-borderThin shadow-sm w-max animate-in slide-in-from-bottom duration-700">
             <span class="text-4xl md:text-5xl font-extrabold text-textPrimary tracking-tighter">
-              ${{ Number(product.price).toFixed(2) }}
+              {{ formatCurrency(product.price) }}
             </span>
             <div v-if="discountPercentage" class="flex flex-col items-start">
               <span class="text-lg font-bold text-red-500 line-through opacity-50 decoration-2">
-                ${{ Number(product.old_price).toFixed(2) }}
+                {{ formatCurrency(product.old_price) }}
               </span>
               <span class="text-[11px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full uppercase tracking-tighter mt-0.5 shadow-sm">
                 {{ ui.locale === 'ar' ? `وفر ${discountPercentage}%` : `-${discountPercentage}% OFF` }}
@@ -87,18 +87,18 @@
           <!-- Stock badge -->
           <div class="mb-8">
             <span
-              v-if="product.stock > 5"
+              v-if="selectedStock > 5"
               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 max-w-max dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-sm"
             >
               <CheckCircle class="w-4 h-4" />
               {{ $t("products.inStock") }}
             </span>
             <span
-              v-else-if="product.stock > 0"
+              v-else-if="selectedStock > 0"
               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-50 max-w-max dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-semibold text-sm"
             >
               <AlertTriangle class="w-4 h-4" />
-              {{ $t("products.lowStockBadge", { n: product.stock }) }}
+              {{ $t("products.lowStockBadge", { n: selectedStock }) }}
             </span>
             <span
               v-else
@@ -132,6 +132,91 @@
             </p>
           </div>
 
+          <div
+            v-if="product.color_options?.length"
+            class="border-t border-borderThin pt-8 mb-8 space-y-4"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-sm font-bold uppercase tracking-widest text-textPrimary">
+                {{ ui.locale === "ar" ? "الألوان" : "Colors" }}
+              </h3>
+              <span
+                v-if="selectedColorOption"
+                class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-xs font-bold text-textSecondary"
+              >
+                <span
+                  class="h-3.5 w-3.5 rounded-full border border-white/50"
+                  :style="{ backgroundColor: selectedColorOption.value }"
+                ></span>
+                {{ selectedColorOption.name }}
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button
+                v-for="color in product.color_options"
+                :key="color.id"
+                type="button"
+                @click="selectColor(color.id)"
+                :class="[
+                  'inline-flex min-h-[46px] items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-all',
+                  selectedColorId === color.id
+                    ? 'border-primary-500 bg-primary-50 text-textPrimary dark:bg-primary-900/20'
+                    : 'border-borderThin bg-surface text-textSecondary hover:border-primary-300',
+                ]"
+              >
+                <span
+                  class="h-4 w-4 rounded-full border border-white/50 shadow-sm"
+                  :style="{ backgroundColor: color.value }"
+                ></span>
+                {{ color.name }}
+              </button>
+            </div>
+          </div>
+
+          <div
+            v-if="product.size_mode !== 'none' && product.size_options?.length"
+            class="border-t border-borderThin pt-8 mb-8 space-y-4"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-sm font-bold uppercase tracking-widest text-textPrimary">
+                {{ ui.locale === "ar" ? "المقاسات" : "Sizes" }}
+              </h3>
+              <span
+                v-if="selectedSize"
+                class="rounded-full bg-surface px-3 py-1.5 text-xs font-bold text-textSecondary"
+              >
+                {{ selectedSize }}
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button
+                v-for="size in product.size_options"
+                :key="size"
+                type="button"
+                :disabled="!isSizeAvailable(size)"
+                @click="selectedSize = size"
+                :class="[
+                  'rounded-full border px-4 py-2 text-sm font-bold transition-all',
+                  selectedSize === size
+                    ? 'border-primary-500 bg-primary-500 text-[#2d1f12]'
+                    : 'border-borderThin bg-surface text-textSecondary hover:border-primary-300',
+                  !isSizeAvailable(size) ? 'cursor-not-allowed opacity-40 line-through' : '',
+                ]"
+              >
+                {{ size }}
+              </button>
+            </div>
+          </div>
+
+          <div
+            v-if="selectionHint"
+            class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300"
+          >
+            {{ selectionHint }}
+          </div>
+
           <!-- Quantity selector + Add to Cart -->
           <div
             class="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-borderThin"
@@ -152,8 +237,8 @@
                 {{ qty }}
               </span>
               <button
-                @click="qty = Math.min(product.stock, qty + 1)"
-                :disabled="qty >= product.stock"
+                @click="qty = Math.min(selectedStock, qty + 1)"
+                :disabled="qty >= selectedStock"
                 class="p-3 text-textSecondary hover:text-textPrimary hover:bg-background rounded-xl transition-colors disabled:opacity-40"
               >
                 <Plus class="w-5 h-5" />
@@ -163,7 +248,7 @@
             <!-- Add to cart button -->
             <button
               @click="handleAddToCart"
-              :disabled="product.stock === 0"
+              :disabled="selectedStock === 0 || !canAddToCart"
               class="btn-primary flex-1 py-4 w-full text-base font-bold rounded-2xl shadow-lg border-2 border-primary-500"
             >
               <ShoppingCart class="w-5 h-5 shrink-0" />
@@ -428,7 +513,9 @@ import ImageGallery from "@/components/ImageGallery.vue";
 import { useCartStore } from "@/stores/cart.js";
 import { useUiStore } from "@/stores/ui.js";
 import { useAuthStore } from "@/stores/auth.js";
+import { useSettingsStore } from "@/stores/settings.js";
 import { useSEO } from "@/composables/useSEO.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 import api from "@/axios.js";
 
 const { setMeta, setJsonLd } = useSEO();
@@ -437,12 +524,16 @@ const { t } = useI18n();
 const cart = useCartStore();
 const ui = useUiStore();
 const auth = useAuthStore();
+const settingsStore = useSettingsStore();
+const { currencyCode, formatCurrency } = useCurrency();
 const showToast = inject("showToast");
 
 const product = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const qty = ref(1);
+const selectedColorId = ref(null);
+const selectedSize = ref(null);
 
 // Reviews
 const reviewData = reactive({
@@ -485,10 +576,80 @@ const displayCategoryName = computed(() =>
     : product.value?.category_name || "",
 );
 
+const selectedColorOption = computed(() =>
+  product.value?.color_options?.find((color) => color.id === selectedColorId.value) || null,
+);
+
+const displayImages = computed(() => {
+  const colorImages = selectedColorOption.value?.images || [];
+  if (colorImages.length) {
+    return normalizeImages(colorImages);
+  }
+  if (product.value?.images?.length) {
+    return normalizeImages(product.value.images);
+  }
+  if (product.value?.main_image) {
+    return normalizeImages([product.value.main_image]);
+  }
+  return [];
+});
+
+const selectedVariant = computed(() => {
+  if (!product.value?.variants?.length) return null;
+
+  if (product.value.size_mode !== "none" && !selectedSize.value) {
+    return null;
+  }
+
+  return (
+    product.value.variants.find((variant) => {
+      const colorMatches = selectedColorId.value
+        ? variant.color_id === selectedColorId.value
+        : !variant.color_id;
+      const sizeMatches =
+        product.value.size_mode !== "none"
+          ? String(variant.size_value || "") === String(selectedSize.value || "")
+          : true;
+      return colorMatches && sizeMatches;
+    }) || null
+  );
+});
+
+const selectedStock = computed(() => {
+  if (!product.value) return 0;
+  if (!product.value.has_variants) return Number(product.value.stock || 0);
+
+  if (product.value.size_mode !== "none" && !selectedSize.value) return 0;
+  if (product.value.color_options?.length && !selectedColorId.value) return 0;
+  return Number(selectedVariant.value?.stock || 0);
+});
+
+const canAddToCart = computed(() => {
+  if (!product.value) return false;
+  if (product.value.color_options?.length && !selectedColorId.value) return false;
+  if (product.value.size_mode !== "none" && !selectedSize.value) return false;
+  return selectedStock.value > 0;
+});
+
+const selectionHint = computed(() => {
+  if (!product.value?.has_variants) return "";
+  if (product.value.color_options?.length && !selectedColorId.value) {
+    return ui.locale === "ar" ? "اختر اللون أولاً." : "Please choose a color first.";
+  }
+  if (product.value.size_mode !== "none" && !selectedSize.value) {
+    return ui.locale === "ar" ? "اختر المقاس قبل الإضافة للسلة." : "Please choose a size before adding to cart.";
+  }
+  return "";
+});
+
 onMounted(async () => {
   try {
+    await settingsStore.fetchSettings();
     const { data } = await api.get(`/products/${route.params.id}`);
     product.value = data.data;
+    if (product.value.color_options?.length) {
+      selectedColorId.value = product.value.color_options[0].id;
+    }
 
     // Update SEO Meta Tags
     setMeta(
@@ -509,23 +670,18 @@ onMounted(async () => {
       "offers": {
         "@type": "Offer",
         "url": window.location.href,
-        "priceCurrency": "USD",
+        "priceCurrency": currencyCode.value,
         "price": product.value.price,
         "availability": product.value.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
       }
     });
 
-    if (product.value.images && product.value.images.length > 0) {
-      product.value.images = product.value.images.map((img, i) =>
-        typeof img === "string"
-          ? { id: i, image_url: img, is_main: i === 0 ? 1 : 0 }
-          : img,
-      );
-    } else if (product.value.main_image) {
-      product.value.images = [
-        { id: 0, image_url: product.value.main_image, is_main: 1 },
-      ];
-    }
+    product.value.images = normalizeImages(product.value.images || []);
+    product.value.color_options =
+      product.value.color_options?.map((color) => ({
+        ...color,
+        images: normalizeImages(color.images || []),
+      })) || [];
   } catch (e) {
     error.value = t("errors.notFound");
   } finally {
@@ -541,8 +697,58 @@ onMounted(async () => {
 });
 
 function handleAddToCart() {
-  cart.addItem(product.value, qty.value);
+  if (!canAddToCart.value) {
+    showToast?.(selectionHint.value || t("products.outOfStock"), "error");
+    return;
+  }
+
+  const selectedImage =
+    selectedColorOption.value?.main_image ||
+    displayImages.value?.[0]?.image_url ||
+    product.value.main_image ||
+    "";
+
+  cart.addItem(
+    {
+      ...product.value,
+      variant_id: selectedVariant.value?.id || null,
+      selected_size: selectedSize.value || null,
+      selected_color_name: selectedColorOption.value?.name || null,
+      selected_color_value: selectedColorOption.value?.value || null,
+      selected_image: selectedImage,
+      stock: selectedStock.value,
+      main_image: selectedImage || product.value.main_image,
+    },
+    qty.value,
+  );
   showToast?.(t("products.addedToCart"), "success");
+  qty.value = 1;
+}
+
+function normalizeImages(images = []) {
+  return images
+    .map((image, index) =>
+      typeof image === "string"
+        ? { id: `${index}-${image}`, image_url: image, is_main: index === 0 ? 1 : 0 }
+        : image,
+    )
+    .filter((image) => image?.image_url);
+}
+
+function isSizeAvailable(size) {
+  if (!product.value?.has_variants) return product.value?.stock > 0;
+  return product.value.variants.some((variant) => {
+    const colorMatches = selectedColorId.value ? variant.color_id === selectedColorId.value : true;
+    return colorMatches && String(variant.size_value || "") === String(size) && Number(variant.stock) > 0;
+  });
+}
+
+function selectColor(colorId) {
+  selectedColorId.value = colorId;
+  qty.value = 1;
+  if (selectedSize.value && !isSizeAvailable(selectedSize.value)) {
+    selectedSize.value = null;
+  }
 }
 
 async function submitReview() {

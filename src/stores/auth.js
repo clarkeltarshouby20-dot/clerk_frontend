@@ -34,6 +34,22 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    async refreshSession() {
+      try {
+        const { data } = await api.get("/users/me", {
+          skipAuthRedirect: true,
+        });
+        if (data?.user) {
+          this._setSession({ user: data.user });
+        }
+        return data?.user || null;
+      } catch {
+        this.user = null;
+        localStorage.removeItem("user");
+        return null;
+      }
+    },
+
     /**
      * Log in with email + password.
      * Token is auto-set by the server in an HttpOnly cookie.

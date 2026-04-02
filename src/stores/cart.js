@@ -6,7 +6,7 @@ import { defineStore } from "pinia";
  */
 export const useCartStore = defineStore("cart", {
   state: () => ({
-    /** @type {Array<{ id, name, name_ar, price, main_image, quantity, stock }>} */
+    /** @type {Array<{ id, cart_key, variant_id, selected_size, selected_color_name, selected_color_value, selected_image, name, name_ar, price, main_image, quantity, stock }>} */
     items: JSON.parse(localStorage.getItem("cart") || "[]"),
   }),
 
@@ -30,13 +30,19 @@ export const useCartStore = defineStore("cart", {
      * @param {number} [qty=1] - Quantity to add
      */
     addItem(product, qty = 1) {
-      const existing = this.items.find((i) => i.id === product.id);
+      const cartKey = `${product.id}:${product.variant_id || "base"}`;
+      const existing = this.items.find((item) => item.cart_key === cartKey);
       if (existing) {
-        // Respect stock limit
         existing.quantity = Math.min(existing.quantity + qty, product.stock);
       } else {
         this.items.push({
           id: product.id,
+          cart_key: cartKey,
+          variant_id: product.variant_id || null,
+          selected_size: product.selected_size || null,
+          selected_color_name: product.selected_color_name || null,
+          selected_color_value: product.selected_color_value || null,
+          selected_image: product.selected_image || "",
           name: product.name,
           name_ar: product.name_ar,
           price: product.price,
@@ -51,14 +57,14 @@ export const useCartStore = defineStore("cart", {
 
     /**
      * Set the exact quantity of a cart item (used by the qty input).
-     * @param {number} productId
+     * @param {string} cartKey
      * @param {number} quantity
      */
-    updateQty(productId, quantity) {
-      const item = this.items.find((i) => i.id === productId);
+    updateQty(cartKey, quantity) {
+      const item = this.items.find((entry) => entry.cart_key === cartKey);
       if (!item) return;
       if (quantity <= 0) {
-        this.removeItem(productId);
+        this.removeItem(cartKey);
       } else {
         item.quantity = Math.min(quantity, item.stock);
         this._persist();
@@ -67,10 +73,10 @@ export const useCartStore = defineStore("cart", {
 
     /**
      * Remove an item by product ID.
-     * @param {number} productId
+     * @param {string} cartKey
      */
-    removeItem(productId) {
-      this.items = this.items.filter((i) => i.id !== productId);
+    removeItem(cartKey) {
+      this.items = this.items.filter((item) => item.cart_key !== cartKey);
       this._persist();
     },
 

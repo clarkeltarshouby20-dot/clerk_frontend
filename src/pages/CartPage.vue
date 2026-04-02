@@ -5,10 +5,10 @@
     <!-- Empty cart -->
     <div
       v-if="cart.items.length === 0"
-      class="flex flex-col items-center justify-center py-24 text-textSecondary gap-6 bg-surface rounded-3xl"
+      class="flex flex-col items-center justify-center gap-6 rounded-3xl bg-surface py-24 text-textSecondary"
     >
       <div
-        class="w-24 h-24 rounded-full bg-background flex flex-col justify-center items-center shadow-sm"
+        class="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-primary-200/60"
       >
         <ShoppingCart class="w-10 h-10 text-primary-500" />
       </div>
@@ -28,13 +28,14 @@
         <TransitionGroup name="list" tag="div" class="space-y-4">
           <div
             v-for="item in cart.items"
-            :key="item.id"
+            :key="item.cart_key"
             class="card p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center shadow-sm hover:shadow-md transition-shadow relative overflow-visible border-borderThin"
           >
             <!-- Image -->
             <RouterLink :to="`/products/${item.id}`" class="block shrink-0">
               <img
                 :src="
+                  item.selected_image ||
                   item.main_image ||
                   'https://placehold.co/100x100/f1f5f9/94a3b8?text=Image'
                 "
@@ -54,17 +55,39 @@
             >
               <RouterLink
                 :to="`/products/${item.id}`"
-                class="font-bold text-textPrimary text-base hover:text-primary-500 transition-colors line-clamp-2 mb-2"
+                class="mb-2 line-clamp-2 text-base font-bold text-textPrimary transition-colors hover:text-primary-600"
               >
                 {{
                   ui.locale === "ar" && item.name_ar ? item.name_ar : item.name
                 }}
               </RouterLink>
               <p
-                class="text-primary-600 dark:text-primary-400 font-extrabold text-lg sm:mb-4"
+                class="text-lg font-extrabold text-primary-700 dark:text-primary-300 sm:mb-4"
               >
-                ${{ Number(item.price).toFixed(2) }}
+                {{ formatCurrency(item.price) }}
               </p>
+
+              <div
+                v-if="item.selected_color_name || item.selected_size"
+                class="mb-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start"
+              >
+                <span
+                  v-if="item.selected_color_name"
+                  class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-xs font-bold text-textSecondary"
+                >
+                  <span
+                    class="h-3 w-3 rounded-full border border-white/50"
+                    :style="{ backgroundColor: item.selected_color_value || '#c8a96b' }"
+                  ></span>
+                  {{ item.selected_color_name }}
+                </span>
+                <span
+                  v-if="item.selected_size"
+                  class="rounded-full bg-surface px-3 py-1 text-xs font-bold text-textSecondary"
+                >
+                  {{ item.selected_size }}
+                </span>
+              </div>
 
               <div
                 class="flex items-center justify-between sm:justify-start gap-4 mt-auto w-full"
@@ -74,7 +97,7 @@
                   class="flex items-center bg-surface rounded-xl p-1 border border-borderThin"
                 >
                   <button
-                    @click="cart.updateQty(item.id, item.quantity - 1)"
+                    @click="cart.updateQty(item.cart_key, item.quantity - 1)"
                     class="p-2 text-textSecondary hover:bg-background hover:text-textPrimary rounded-lg transition-colors"
                   >
                     <Minus class="w-4 h-4" />
@@ -84,7 +107,7 @@
                     >{{ item.quantity }}</span
                   >
                   <button
-                    @click="cart.updateQty(item.id, item.quantity + 1)"
+                    @click="cart.updateQty(item.cart_key, item.quantity + 1)"
                     :disabled="item.quantity >= item.stock"
                     class="p-2 text-textSecondary hover:bg-background hover:text-textPrimary rounded-lg transition-colors disabled:opacity-40"
                   >
@@ -95,14 +118,14 @@
                 <!-- Sub-total & Remove -->
                 <div class="flex items-center gap-4 ml-auto sm:ml-6">
                   <span
-                    class="text-sm font-extrabold text-textPrimary text-end"
+                  class="text-end text-sm font-extrabold text-textPrimary"
                   >
-                    ${{ (Number(item.price) * item.quantity).toFixed(2) }}
+                    {{ formatCurrency(Number(item.price) * item.quantity) }}
                   </span>
 
                   <button
-                    @click="cart.removeItem(item.id)"
-                    class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors bg-surface sm:bg-transparent"
+                    @click="cart.removeItem(item.cart_key)"
+                    class="rounded-xl bg-surface p-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 sm:bg-transparent"
                     :title="$t('cart.removeItem')"
                   >
                     <Trash2 class="w-4 h-4" />
@@ -129,13 +152,13 @@
             <div class="flex justify-between items-center">
               <span>{{ $t("cart.subtotal") }}</span>
               <span class="text-textPrimary font-bold"
-                >${{ cart.total.toFixed(2) }}</span
+                >{{ formatCurrency(cart.total) }}</span
               >
             </div>
             <div class="flex justify-between items-center">
               <span>{{ $t("cart.shipping") }}</span>
               <span
-                class="text-emerald-500 font-bold uppercase tracking-widest text-xs"
+                class="text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-300"
                 >{{ $t("cart.free") }}</span
               >
             </div>
@@ -147,8 +170,8 @@
                 $t("common.total")
               }}</span>
               <span
-                class="font-black text-primary-600 dark:text-primary-400 text-2xl"
-                >${{ cart.total.toFixed(2) }}</span
+                class="text-2xl font-black text-primary-700 dark:text-primary-300"
+                >{{ formatCurrency(cart.total) }}</span
               >
             </div>
           </div>
@@ -156,14 +179,14 @@
           <div class="flex flex-col gap-3">
             <RouterLink
               to="/checkout"
-              class="btn-primary w-full py-4 text-base shadow-lg justify-center shadow-primary-500/20"
+              class="btn-primary w-full justify-center py-4 text-base shadow-lg shadow-primary-500/20"
             >
               {{ $t("cart.checkout") }}
               <ArrowRight class="w-4 h-4 ml-1 rtl:-scale-x-100" />
             </RouterLink>
             <RouterLink
               to="/products"
-              class="btn-secondary w-full py-3 text-sm justify-center border-none bg-surface hover:bg-borderThin"
+              class="btn-secondary w-full justify-center border-none bg-surface py-3 text-sm hover:bg-borderThin"
             >
               {{ $t("cart.continueShopping") }}
             </RouterLink>
@@ -178,9 +201,11 @@
 import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from "lucide-vue-next";
 import { useCartStore } from "@/stores/cart.js";
 import { useUiStore } from "@/stores/ui.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 const cart = useCartStore();
 const ui = useUiStore();
+const { formatCurrency } = useCurrency();
 </script>
 
 <style scoped>

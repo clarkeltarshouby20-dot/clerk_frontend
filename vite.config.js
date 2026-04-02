@@ -16,7 +16,7 @@ export default defineConfig({
     proxy: {
       // Proxy API requests to the backend during development
       "/api": {
-        target: "https://e-commerce-server-v1.vercel.app/",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },

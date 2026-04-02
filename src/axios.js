@@ -32,8 +32,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
+    const skipAuthRedirect = error.config?.skipAuthRedirect;
 
-    if (status === 401) {
+    if (status === 401 && !skipAuthRedirect) {
       // Remove stale token and redirect to login
       localStorage.removeItem("token");
       localStorage.removeItem("user");

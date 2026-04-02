@@ -2,7 +2,7 @@
   <header
     :class="[
       'fixed top-0 left-0 right-0 w-full transition-all duration-300 z-[999]',
-      'bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-borderThin shadow-sm',
+      'bg-background/90 dark:bg-background/90 backdrop-blur-xl border-b border-borderThin shadow-sm',
       isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0',
     ]"
   >
@@ -12,21 +12,41 @@
         <div class="flex items-center gap-8 shrink-0">
           <RouterLink
             to="/"
-            class="flex items-center gap-2 font-extrabold text-xl shrink-0 transition-transform duration-300 hover:scale-105"
+            class="flex items-center gap-3 sm:gap-4 shrink-0 transition-transform duration-300 hover:scale-[1.01]"
           >
-            <img
-              v-if="settings.logoUrl"
-              :src="settings.logoUrl"
-              :alt="settings.siteName || 'ShopWave'"
-              class="h-8 w-auto min-w-[32px] object-contain dark:invert"
-              width="120"
-              height="32"
-            />
-            <ShoppingBag v-else class="w-7 h-7 text-primary-500" />
-            <span
-              class="hidden lg:inline font-bold text-2xl tracking-tight text-textPrimary h-8 flex items-center"
-              >{{ settings.siteName || "ShopWave" }}</span
+            <div
+              class="flex items-center gap-3 sm:gap-4"
+              :class="ui.locale === 'ar' ? 'flex-row' : 'flex-row-reverse'"
             >
+              <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-primary-100/70 dark:bg-primary-900/50 flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-300 flex-shrink-0 border border-primary-300/60 dark:border-primary-700/40 shadow-[0_10px_25px_-18px_rgba(120,84,34,0.85)]"
+              >
+                <img
+                  v-if="settings.logoUrl"
+                  :src="settings.logoUrl"
+                  :alt="settings.siteName || 'ShopWave'"
+                  class="w-full h-full object-cover"
+                  width="48"
+                  height="48"
+                />
+                <ShoppingBag v-else class="w-6 h-6 text-primary-500" />
+              </div>
+
+              <div class="flex flex-col justify-center min-w-0">
+                <span
+                  class="brand-display text-2xl sm:text-3xl font-semibold text-textPrimary leading-none truncate"
+                  :class="ui.locale === 'ar' ? 'text-right' : 'text-left'"
+                >
+                  {{ settings.siteName || "ShopWave" }}
+                </span>
+                <span
+                  class="hidden sm:block text-[10px] font-bold uppercase tracking-[0.3em] text-textSecondary/70 mt-1"
+                  :class="ui.locale === 'ar' ? 'text-right' : 'text-left'"
+                >
+                  Curated Luxury Store
+                </span>
+              </div>
+            </div>
           </RouterLink>
 
           <!-- Desktop Navigation -->
@@ -35,8 +55,8 @@
               v-for="link in navLinks"
               :key="link.to"
               :to="link.to"
-              class="group relative py-2 text-sm font-semibold text-textSecondary hover:text-primary-600 dark:hover:text-primary-400 transition-colors uppercase tracking-widest"
-              active-class="text-primary-600 dark:text-primary-400 font-extrabold"
+              class="group relative py-2 text-sm font-semibold text-textSecondary hover:text-primary-700 dark:hover:text-primary-300 transition-colors uppercase tracking-[0.18em]"
+              active-class="text-primary-700 dark:text-primary-300 font-extrabold"
             >
               {{ link.label }}
               <span
@@ -51,13 +71,13 @@
         <div class="hidden md:flex flex-1 max-w-md mx-4">
           <form @submit.prevent="performSearch" class="relative w-full group">
             <div class="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
-              <Search class="w-4 h-4 text-textSecondary group-focus-within:text-primary-500 transition-colors" />
+              <Search class="w-4 h-4 text-textSecondary group-focus-within:text-primary-600 transition-colors" />
             </div>
             <input
               v-model="headerSearchQuery"
               type="text"
               :placeholder="$t('products.searchPlaceholder') || 'Search products...'"
-              class="w-full bg-slate-100 dark:bg-slate-800/50 border border-transparent focus:border-primary-500/50 focus:bg-white dark:focus:bg-slate-800 py-2.5 ps-11 pe-4 rounded-2xl text-sm font-medium transition-all outline-none"
+              class="w-full bg-surface/90 border border-borderThin/70 focus:border-primary-500/50 focus:bg-background dark:focus:bg-surface py-2.5 ps-11 pe-4 rounded-2xl text-sm font-medium transition-all outline-none"
             />
           </form>
         </div>
@@ -84,7 +104,7 @@
           <!-- Dark/Light mode -->
           <button
             @click="ui.toggleDark()"
-            class="hidden sm:flex items-center justify-center min-w-[48px] min-h-[48px] p-2 rounded-xl text-textSecondary hover:bg-black/5 dark:hover:bg-white/10 hover:text-primary-500 transition-colors"
+            class="hidden sm:flex items-center justify-center min-w-[48px] min-h-[48px] p-2 rounded-xl text-textSecondary hover:bg-primary-50/60 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-colors"
             :aria-label="ui.darkMode ? $t('common.lightMode') : $t('common.darkMode')"
             :title="ui.darkMode ? $t('common.lightMode') : $t('common.darkMode')"
           >
@@ -110,7 +130,7 @@
           <!-- Cart icon -->
           <RouterLink
             to="/cart"
-            class="relative flex items-center justify-center min-w-[48px] min-h-[48px] p-2 rounded-xl text-textSecondary hover:bg-black/5 dark:hover:bg-white/10 hover:text-primary-500 transition-colors"
+            class="relative flex items-center justify-center min-w-[48px] min-h-[48px] p-2 rounded-xl text-textSecondary hover:bg-primary-50/60 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-colors"
             :aria-label="$t('nav.cart')"
           >
             <ShoppingCart class="w-5 h-5" />
@@ -135,7 +155,7 @@
             >
               <!-- Avatar -->
               <span
-                class="w-8 h-8 rounded-full overflow-hidden bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-xs font-bold text-primary-600 dark:text-primary-400 flex-shrink-0"
+                class="w-8 h-8 rounded-full overflow-hidden bg-primary-100/70 dark:bg-primary-900/50 flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-300 flex-shrink-0"
               >
                 <img
                   v-if="auth.user?.image"
@@ -182,7 +202,7 @@
                   <RouterLink
                     to="/profile"
                     @click="dropdownOpen = false"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-textSecondary hover:bg-primary-50 dark:hover:bg-white/5 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-textSecondary hover:bg-primary-50/70 dark:hover:bg-primary-900/15 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                   >
                     <UserCircle class="w-4 h-4" />
                     {{ $t("nav.profile") }}
@@ -191,7 +211,7 @@
                   <RouterLink
                     to="/orders"
                     @click="dropdownOpen = false"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-textSecondary hover:bg-primary-50 dark:hover:bg-white/5 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-textSecondary hover:bg-primary-50/70 dark:hover:bg-primary-900/15 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                   >
                     <Package class="w-4 h-4" />
                     {{ $t("nav.orders") }}
@@ -202,7 +222,7 @@
                     v-if="auth.isAdmin"
                     to="/admin"
                     @click="dropdownOpen = false"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                   >
                     <LayoutDashboard class="w-4 h-4" />
                     {{ $t("nav.dashboard") }}
@@ -257,7 +277,7 @@
             type="text"
             ref="mobileSearchInput"
             :placeholder="$t('products.searchPlaceholder') || 'Search products...'"
-            class="w-full bg-slate-100 dark:bg-slate-800/80 py-3 ps-11 pe-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500/30"
+            class="w-full bg-surface py-3 ps-11 pe-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500/30 border border-borderThin"
           />
         </form>
       </div>
@@ -275,7 +295,7 @@
           class="flex items-center gap-3 px-6 py-4 bg-surface border-b border-borderThin"
         >
           <span
-            class="w-10 h-10 rounded-full overflow-hidden bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-sm font-bold text-primary-600 dark:text-primary-400 flex-shrink-0"
+            class="w-10 h-10 rounded-full overflow-hidden bg-primary-100/70 dark:bg-primary-900/50 flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-300 flex-shrink-0"
           >
             <img
               v-if="auth.user?.image"
@@ -324,7 +344,7 @@
             :key="link.to"
             :to="link.to"
             @click="mobileOpen = false"
-            class="flex items-center gap-2 px-4 py-3 rounded-xl text-base font-semibold text-textSecondary hover:bg-surface hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            class="flex items-center gap-2 px-4 py-3 rounded-xl text-base font-semibold text-textSecondary hover:bg-surface hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
             {{ link.label }}
           </RouterLink>
@@ -335,7 +355,7 @@
             <RouterLink
               to="/profile"
               @click="mobileOpen = false"
-              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-textSecondary hover:bg-surface hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-textSecondary hover:bg-surface hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               <UserCircle class="w-5 h-5" />
               {{ $t("nav.profile") }}
@@ -344,7 +364,7 @@
             <RouterLink
               to="/orders"
               @click="mobileOpen = false"
-              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-textSecondary hover:bg-surface hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-textSecondary hover:bg-surface hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               <Package class="w-5 h-5" />
               {{ $t("nav.orders") }}
@@ -355,7 +375,7 @@
               v-if="auth.isAdmin"
               to="/admin"
               @click="mobileOpen = false"
-              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 transition-colors"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 transition-colors"
             >
               <LayoutDashboard class="w-5 h-5" />
               {{ $t("nav.dashboard") }}
@@ -493,10 +513,10 @@ const headerInitials = computed(() => {
 const roleBadgeClass = computed(() => {
   const role = auth.user?.role;
   if (role === "owner")
-    return "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300";
+    return "bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 border border-primary-300/40 dark:border-primary-700/30";
   if (role === "admin")
-    return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
-  return "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
+    return "bg-[#eadcc2] dark:bg-[#4a3828] text-[#75522a] dark:text-[#e8cca0] border border-primary-300/40 dark:border-[#8d6a40]/30";
+  return "bg-[#ede3d3] dark:bg-[#433326] text-[#755d44] dark:text-[#d4b897] border border-borderThin";
 });
 
 const navLinks = computed(() => [

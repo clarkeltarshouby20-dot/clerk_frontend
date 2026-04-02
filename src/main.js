@@ -24,5 +24,6 @@ uiStore.initFromStorage();
 import { useAuthStore } from "./stores/auth.js";
 const authStore = useAuthStore();
 authStore.initFromStorage();
+authStore.refreshSession();
 
 app.mount("#app");

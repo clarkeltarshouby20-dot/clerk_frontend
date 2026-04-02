@@ -2,7 +2,7 @@
   <div
     v-memo="[product.id, isInWishlist, imageLoaded, ui.locale]"
     class="card-hover group cursor-pointer flex flex-col relative h-full bg-background product-card-container"
-    @click="$router.push(`/products/${product.id}`)"
+    @click="goToProduct()"
   >
     <!-- Product Image (aspect-square) -->
     <div
@@ -100,7 +100,7 @@
 
     <!-- Info Box -->
     <div
-      class="flex flex-col gap-0.5 p-3 sm:p-5 flex-1"
+      class="flex flex-col gap-0.5 p-3 sm:p-4 flex-1"
       :class="[ui.locale === 'ar' ? 'text-right' : 'text-left']"
     >
       <p
@@ -134,12 +134,12 @@
         >
       </div>
 
-      <div class="mt-auto pt-2 sm:pt-3 flex items-center gap-3">
+      <div class="mt-auto pt-2 flex items-center gap-3">
         <span class="text-base sm:text-lg font-extrabold text-textPrimary shrink-0">
-          ${{ Number(product.price).toFixed(2) }}
+          {{ formatCurrency(product.price) }}
         </span>
         <span v-if="product.old_price" class="text-xs font-semibold text-red-500 line-through opacity-70">
-          ${{ Number(product.old_price).toFixed(2) }}
+          {{ formatCurrency(product.old_price) }}
         </span>
       </div>
     </div>
@@ -149,12 +149,14 @@
 <script setup>
 import { computed, inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { ShoppingCart, Heart, Star } from "lucide-vue-next";
 import OptimizedImage from "@/components/OptimizedImage.vue";
 import { useCartStore } from "@/stores/cart.js";
 import { useUiStore } from "@/stores/ui.js";
 import { useWishlistStore } from "@/stores/wishlist.js";
 import { useSettingsStore } from "@/stores/settings.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -162,10 +164,12 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const router = useRouter();
 const cart = useCartStore();
 const ui = useUiStore();
 const wishlist = useWishlistStore();
 const settings = useSettingsStore();
+const { formatCurrency } = useCurrency();
 const showToast = inject("showToast");
 
 const imageLoaded = ref(false);
@@ -227,7 +231,25 @@ const discountPercentage = computed(() => {
   return Math.round((diff / props.product.old_price) * 100);
 });
 
+const hasPurchaseChoices = computed(() => {
+  const hasSizes = props.product.size_mode && props.product.size_mode !== "none";
+  const hasColors =
+    Array.isArray(props.product.color_options) &&
+    props.product.color_options.length > 0;
+  return hasSizes || hasColors;
+});
+
+function goToProduct() {
+  router.push(`/products/${props.product.id}`);
+}
+
 function addToCart() {
+  if (hasPurchaseChoices.value) {
+    router.push(`/products/${props.product.id}`);
+    showToast?.(t("products.choosePurchaseOptions"), "info", 2500);
+    return;
+  }
+
   cart.addItem(props.product);
   showToast?.(t("products.addedToCart"), "success", 2000);
   cartPulse.value = true;
@@ -261,12 +283,12 @@ function onImageError(e) {
 <style scoped>
 /* Critical Layout Styles - Loads immediately with the component */
 .product-card-container {
-  min-height: 320px; /* Reduced for mobile */
+  min-height: 270px;
 }
 
 @media (min-width: 640px) {
   .product-card-container {
-    min-height: 480px;
+    min-height: 380px;
   }
 }
 

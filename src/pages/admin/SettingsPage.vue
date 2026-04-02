@@ -112,7 +112,7 @@
                 />
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Site Logo Card -->
                 <div class="p-6 rounded-[2rem] bg-surface/40 border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary-500/20 group/logo-card">
                   <div class="flex items-center justify-between mb-6">
@@ -167,8 +167,8 @@
                   <ImageUploadSingle
                     v-model="faviconModel"
                     :label="null"
-                    :max-size="512 * 1024"
-                    accept="image/png,image/webp,image/x-icon,image/svg+xml"
+                    :max-size="1024 * 1024"
+                    accept="image/png,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon,.ico"
                     :uploading="saving"
                     :readonly="!auth.isOwner"
                     shape="square"
@@ -178,6 +178,35 @@
                   >
                     <template #footer>
                        <span class="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-tighter bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-lg">512x512px</span>
+                    </template>
+                  </ImageUploadSingle>
+                </div>
+
+                <div class="p-6 rounded-[2rem] bg-surface/40 border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary-500/20 group/footer-logo-card md:col-span-2">
+                  <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                      <div class="p-2.5 rounded-xl bg-sky-500/10 text-sky-500">
+                        <ImageIcon class="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 class="text-[11px] font-black uppercase tracking-widest text-textPrimary leading-none">Footer Logo</h4>
+                        <p class="text-[9px] font-bold text-textSecondary uppercase tracking-tighter mt-1 opacity-70">Optional footer branding asset</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ImageUploadSingle
+                    v-model="footerLogoModel"
+                    :label="null"
+                    :max-size="1024 * 1024"
+                    accept="image/jpeg,image/png,image/webp,image/svg+xml,.ico"
+                    :uploading="saving"
+                    :readonly="!auth.isOwner"
+                    aspect="aspect-[16/5]"
+                    fit="contain"
+                  >
+                    <template #footer>
+                      <span class="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-tighter bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-lg">1MB max</span>
                     </template>
                   </ImageUploadSingle>
                 </div>
@@ -323,7 +352,7 @@
           </div>
         </section>
 
-        <!-- Footer Actions (Owner only) -->
+          <!-- Footer Actions (Owner only) -->
         <div v-if="auth.isOwner" class="sticky bottom-8 z-10 flex justify-end">
           <button @click="saveSettings" :disabled="saving" class="btn-primary px-10 py-5 rounded-full shadow-[0_15px_30px_rgba(var(--primary-500-rgb),0.3)] hover:shadow-primary-500/50 hover:-translate-y-1 transition-all duration-300 ring-8 ring-background/80 backdrop-blur-sm">
             <LoadingSpinner v-if="saving" :size="20" />
@@ -347,13 +376,13 @@ import {
   BarChart2,
   Code2,
   CheckCircle,
-  AlertCircle,
-  ShieldAlert,
-  Upload,
-  Image as ImageIcon,
-  Share2,
-  CreditCard,
-  Facebook,
+    AlertCircle,
+    ShieldAlert,
+    Upload,
+    Image as ImageIcon,
+    Share2,
+    CreditCard,
+    Facebook,
   Twitter,
   Instagram,
   Youtube,
@@ -423,7 +452,14 @@ onMounted(() => {
 const previewFavicon = computed(() => {
   if (!faviconModel.value) return null;
   if (faviconModel.value instanceof File) return URL.createObjectURL(faviconModel.value);
-  return faviconModel.value;
+  return `${faviconModel.value}`
+    .replace(/&#x([0-9a-f]+);/gi, (_match, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
+    )
+    .replace(/&#([0-9]+);/g, (_match, dec) =>
+      String.fromCharCode(parseInt(dec, 10)),
+    )
+    .replace(/&amp;/g, "&");
 });
 
 // ── Local form state ────────────────────────────────────────
@@ -432,6 +468,7 @@ const form = reactive({
   site_name: "",
   logo_url: "",
   favicon_url: "",
+  footer_logo_url: "",
   contact_email: "",
   whatsapp_number: "",
   currency_code: "",
@@ -455,6 +492,7 @@ const feedbackType = ref("success");
 
 const logoModel = ref(null);
 const faviconModel = ref(null);
+const footerLogoModel = ref(null);
 
 // function onLogoFileChange(event) { ... } removed in favor of ImageUploadSingle
 // function onFaviconFileChange(event) { ... } removed in favor of ImageUploadSingle
@@ -465,9 +503,10 @@ function syncFormFromStore() {
   form.site_name = d.site_name || "";
   form.logo_url = d.logo_url || "";
   form.favicon_url = d.favicon_url || "";
+  form.footer_logo_url = d.footer_logo_url || "";
   form.contact_email = d.contact_email || "";
   form.whatsapp_number = d.whatsapp_number || "";
-  form.currency_code = d.currency_code || "USD";
+  form.currency_code = d.currency_code || "EGP";
   form.google_analytics_id = d.google_analytics_id || "";
   form.google_ads_client_id = d.google_ads_client_id || "";
   form.header_scripts = d.header_scripts || "";
@@ -482,6 +521,7 @@ function syncFormFromStore() {
 
   logoModel.value = d.logo_url || null;
   faviconModel.value = d.favicon_url || null;
+  footerLogoModel.value = d.footer_logo_url || null;
 }
 
 onMounted(async () => {
@@ -533,7 +573,11 @@ async function saveSettings() {
 
     let payload;
 
-    if (logoModel.value instanceof File || faviconModel.value instanceof File) {
+    if (
+      logoModel.value instanceof File ||
+      faviconModel.value instanceof File ||
+      footerLogoModel.value instanceof File
+    ) {
       const fd = new FormData();
       Object.entries(textFields).forEach(([k, v]) => fd.append(k, v));
       
@@ -543,12 +587,16 @@ async function saveSettings() {
       if (faviconModel.value instanceof File) fd.append("favicon", faviconModel.value);
       else fd.append("favicon_url", typeof faviconModel.value === 'string' ? faviconModel.value : (form.favicon_url ?? ""));
 
+      if (footerLogoModel.value instanceof File) fd.append("footer_logo", footerLogoModel.value);
+      else fd.append("footer_logo_url", typeof footerLogoModel.value === 'string' ? footerLogoModel.value : (form.footer_logo_url ?? ""));
+
       payload = fd;
     } else {
       payload = { 
         ...textFields, 
         logo_url: typeof logoModel.value === 'string' ? logoModel.value : (form.logo_url ?? ""),
-        favicon_url: typeof faviconModel.value === 'string' ? faviconModel.value : (form.favicon_url ?? "")
+        favicon_url: typeof faviconModel.value === 'string' ? faviconModel.value : (form.favicon_url ?? ""),
+        footer_logo_url: typeof footerLogoModel.value === 'string' ? footerLogoModel.value : (form.footer_logo_url ?? "")
       };
     }
 
