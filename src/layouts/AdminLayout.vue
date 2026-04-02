@@ -292,7 +292,9 @@ const sidebarOpen = ref(false);
 const isSidebarHovered = ref(false);
 
 onMounted(() => {
-  auth.refreshSession();
+  if (auth.user) {
+    auth.refreshSession();
+  }
 });
 
 const allNavLinks = computed(() => [
