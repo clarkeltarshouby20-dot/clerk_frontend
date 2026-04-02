@@ -124,8 +124,8 @@ export default {
     bestDeals: "أفضل العروض",
     techAccessories: "إكسسوارات تقنية",
     newCollection: "الفخامة الهادئة متجسدة.",
-    heroTitlePart1: "ارتقِ بأسلوبك",
-    heroTitlePart2: "اليومي المتميز",
+    heroTitlePart1: "ليس للجميع",
+    heroTitlePart2: "أهلاً بكم في الطبقة العليا",
     exploreMore: "اكتشف المزيد",
     topRated: "الأعلى تقييماً",
     smartGear: "أجهزة ذكية",
@@ -211,7 +211,7 @@ export default {
     walletInstructionsTitle: "التحويل عبر فودافون/أورانج كاش إلى:",
     instapayInstructionsTitle: "التحويل عبر إنستاباي (InstaPay) إلى:",
     uploadProofRule:
-      "بعد تحويل المجموع الإجمالي بالضبط، التقط صورة لشاشة العملية الناجحة وارفعها أدناه لتأكيد طلبك.",
+      "يجب عليك إرسال رسوم الشحن أو المبلغ الإجمالي لتأكيد طلبك",
     placeOrder: "تأكيد الطلب",
     confirmOrder: "تأكيد العملية والدفع",
     orderPlaced: "تم تأكيد طلبك بنجاح! جاري التوجيه...",
@@ -239,6 +239,7 @@ export default {
     selectGovernorate: "اختيار",
     selectedGovernorate: "تم الاختيار",
     selectedGovernorateLabel: "المحافظة المختارة",
+    clearGovernorate: "مسح المحافظة المختارة",
   },
 
   // ── الدفع ───────────────────────────────────────────────
@@ -331,6 +332,23 @@ export default {
 
   // ── الإدارة ───────────────────────────────────────────────
   admin: {
+    filters: {
+      allTime: "الوقت بالكامل (الكل)",
+      byDay: "يوم",
+      byWeek: "أسبوع",
+      byMonth: "شهر",
+      byYear: "سنة",
+      panelTitle: "فلترة الإحصائيات",
+      allTimeDescription: "عرض جميع البيانات بدون أي تقييد زمني.",
+      selectedRange: "الفترة المختارة",
+      chooseRangePrompt: "اختر فترة زمنية دقيقة لعرض الإحصائيات المرتبطة بها.",
+      apply: "تحديث النتائج",
+      reset: "إعادة تعيين",
+      dayLabel: "اختر اليوم",
+      weekLabel: "اختر الأسبوع",
+      monthLabel: "اختر الشهر",
+      yearLabel: "اختر السنة",
+    },
     user: "مستخدم",
     dashboard: "لوحة التحكم",
     products: "المنتجات",
@@ -352,6 +370,7 @@ export default {
     totalOrders: "إجمالي الطلبات",
     totalRevenue: "إجمالي الإيرادات",
     totalNetProfit: "إجمالي صافي الربح",
+    totalReturns: "إجمالي المرتجعات",
     pendingPayments: "مدفوعات معلقة",
     totalProducts: "إجمالي المنتجات",
     totalUsers: "إجمالي المستخدمين",

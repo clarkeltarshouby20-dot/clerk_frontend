@@ -14,7 +14,6 @@
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { createI18n } from "vue-i18n";
 import router from "./router/index.js";
 import i18n from "./i18n/index.js";
 import "./style.css"; // Tailwind CSS and global styles
@@ -33,7 +32,7 @@ app.use(i18n);
 
 // ── 2. Register Global Directives ──────────────────────────────────────────────
 // v-animate allows for scroll-triggered reveal animations across the app
-app.use("animate", animateDirective);
+app.directive("animate", animateDirective);
 
 // ── 3. App Initialization (Pre-Mount) ──────────────────────────────────────────
 // Initialize persisted state (dark mode, locale dir/lang) BEFORE mounting

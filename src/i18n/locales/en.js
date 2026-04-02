@@ -124,8 +124,8 @@ export default {
     techAccessories: "Tech Accessories",
     newCollection: "Quiet Luxury Realized.",
     heroDescription: "Discover a curated selection of excellence. Explore our exclusive new arrivals designed for modern, effortless living.",
-    heroTitlePart1: "Elevate Your",
-    heroTitlePart2: "Everyday Style",
+    heroTitlePart1: "Not for Everyone",
+    heroTitlePart2: "Welcome to the Upper Class",
     exploreMore: "Explore More",
     topRated: "Top Rated",
     smartGear: "Smart Gear",
@@ -208,7 +208,7 @@ export default {
     walletInstructionsTitle: "Transfer via Vodafone/Orange Cash to:",
     instapayInstructionsTitle: "Transfer via InstaPay to:",
     uploadProofRule:
-      "After transferring the Exact Total, upload a screenshot of the successful transaction below to verify your order.",
+      "You must send the shipping fee or the total to confirm your order",
     placeOrder: "Place Order",
     confirmOrder: "Confirm & Pay",
     orderPlaced: "Order placed successfully! Redirecting...",
@@ -236,6 +236,7 @@ export default {
     selectGovernorate: "Select",
     selectedGovernorate: "Selected",
     selectedGovernorateLabel: "Selected Governorate",
+    clearGovernorate: "Clear selected governorate",
   },
 
   // ── Payment ──────────────────────────────────────────────
@@ -330,6 +331,23 @@ export default {
 
   // ── Admin ─────────────────────────────────────────────────
   admin: {
+    filters: {
+      allTime: "All Time",
+      byDay: "Day",
+      byWeek: "Week",
+      byMonth: "Month",
+      byYear: "Year",
+      panelTitle: "Filter Analytics",
+      allTimeDescription: "Showing all dashboard data without a time restriction.",
+      selectedRange: "Selected Range",
+      chooseRangePrompt: "Choose a precise time range to refresh the dashboard.",
+      apply: "Refresh Results",
+      reset: "Reset",
+      dayLabel: "Select Day",
+      weekLabel: "Select Week",
+      monthLabel: "Select Month",
+      yearLabel: "Select Year",
+    },
     user: "User",
     dashboard: "Dashboard",
     products: "Products",
@@ -351,6 +369,7 @@ export default {
     totalOrders: "Total Orders",
     totalRevenue: "Total Revenue",
     totalNetProfit: "Total Net Profit",
+    totalReturns: "Total Returns",
     pendingPayments: "Pending Payments",
     totalProducts: "Total Products",
     totalUsers: "Total Users",

@@ -27,7 +27,7 @@
             {{ $t("home.newCollection") || "New Collection" }}
           </span>
           <h1
-            class="text-5xl md:text-6xl lg:text-[5rem] font-extrabold text-textPrimary leading-[1.1] mb-6 tracking-tight"
+            class="text-5xl md:text-6xl lg:text-[5rem] font-extrabold text-textPrimary leading-[1.18] md:leading-[1.16] lg:leading-[1.12] mb-6 tracking-tight"
           >
             {{ $t("home.heroTitlePart1") }} <br />
             <span
@@ -66,8 +66,8 @@
             class="relative h-full w-full rounded-[2.5rem] lg:rounded-[4rem] overflow-hidden shadow-2xl shadow-primary-900/20 dark:shadow-black/50 border border-white/20 dark:border-white/5 bg-surface text-center flex flex-col items-center justify-center"
           >
             <img
-              :src="optimizeImg('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04', 1200, 80)"
-              :srcset="`${optimizeImg('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04', 1200, 80)} 1200w, ${optimizeImg('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04', 800, 80)} 800w`"
+              :src="optimizeImg('https://res.cloudinary.com/doprwyj9v/image/upload/q_auto/f_auto/v1775171336/clark_odk5k7.jpg', 1200, 80)"
+              :srcset="`${optimizeImg('https://res.cloudinary.com/doprwyj9v/image/upload/q_auto/f_auto/v1775171336/clark_odk5k7.jpg', 1200, 80)} 1200w, ${optimizeImg('https://res.cloudinary.com/doprwyj9v/image/upload/q_auto/f_auto/v1775171336/clark_odk5k7.jpg', 800, 80)} 800w`"
               sizes="100vw"
               width="1200"
               height="800"

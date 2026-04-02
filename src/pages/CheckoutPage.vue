@@ -109,10 +109,19 @@
                     v-model="governorateSearch"
                     type="text"
                     :placeholder="$t('checkout.governorateSearchPlaceholder')"
-                    class="input-field w-full bg-background ps-11 pe-12 text-sm"
+                    class="input-field w-full bg-background ps-11 pe-22 text-sm"
                     @focus="openGovernorateList"
                     @input="openGovernorateList"
                   />
+                  <button
+                    v-if="governorateSearch"
+                    type="button"
+                    class="absolute top-1/2 -translate-y-1/2 right-14 inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-textSecondary transition-colors hover:text-red-500 rtl:left-14 rtl:right-auto"
+                    @click.stop="clearGovernorate"
+                    :title="$t('checkout.clearGovernorate')"
+                  >
+                    <X class="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     class="absolute top-1/2 -translate-y-1/2 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface text-textSecondary transition-colors hover:text-primary-500 rtl:left-3 rtl:right-auto"
@@ -616,6 +625,12 @@ function selectGovernorate(governorate) {
   form.shipping_governorate = governorate.key;
   governorateSearch.value = governorateLabel(governorate.key);
   governorateDropdownOpen.value = false;
+}
+
+function clearGovernorate() {
+  form.shipping_governorate = "";
+  governorateSearch.value = "";
+  governorateDropdownOpen.value = true;
 }
 
 function governorateLabel(value) {

@@ -169,8 +169,18 @@ const governorates = ref([]);
 
 const filteredGovernorates = computed(() => {
   const query = shippingSearch.value.trim().toLowerCase();
-  if (!query) return governorates.value;
-  return governorates.value.filter((item) => matchesGovernorateQuery(item.key, query));
+  const sorted = [...governorates.value].sort((a, b) => {
+    if (a.is_active !== b.is_active) {
+      return a.is_active ? -1 : 1;
+    }
+    return governorateLabel(a.key).localeCompare(
+      governorateLabel(b.key),
+      locale.value,
+    );
+  });
+
+  if (!query) return sorted;
+  return sorted.filter((item) => matchesGovernorateQuery(item.key, query));
 });
 
 function governorateLabel(value) {
@@ -203,7 +213,7 @@ async function saveShipping() {
     };
 
     const { data } = await api.put("/settings/shipping", payload);
-    settingsStore.data = data.data || settingsStore.data;
+    settingsStore.data.value = data.data || settingsStore.data.value;
     syncFromStore();
     feedbackType.value = "success";
     feedbackMsg.value = t("settings.saveSuccess");
