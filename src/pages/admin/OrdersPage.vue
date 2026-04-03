@@ -308,7 +308,17 @@
                   class="font-semibold text-textPrimary tracking-tight flex items-center gap-2"
                 >
                   <Phone class="w-3.5 h-3.5 text-textSecondary" />
-                  <span dir="ltr">{{ selectedOrder.shipping_phone || selectedOrder.phone || "N/A" }}</span>
+                  <a
+                    v-if="selectedOrder.shipping_phone || selectedOrder.phone"
+                    :href="`https://wa.me/2${(selectedOrder.shipping_phone || selectedOrder.phone).replace(/\D/g, '')}`"
+                    target="_blank"
+                    class="hover:text-emerald-500 hover:underline decoration-emerald-500/30 underline-offset-4 transition-colors font-bold whitespace-nowrap"
+                    dir="ltr"
+                    title="Open on WhatsApp"
+                  >
+                    {{ selectedOrder.shipping_phone || selectedOrder.phone }}
+                  </a>
+                  <span v-else dir="ltr">N/A</span>
                 </p>
               </div>
 
