@@ -191,7 +191,7 @@
             <span>{{
               ui.locale === "ar" ? "تم التطوير بواسطة" : "Developed by"
             }}</span>
-            <span class="font-bold text-primary-300">Mido</span>
+            <span class="font-bold text-primary-300">Eiiso</span>
           </div>
           <div
             class="flex flex-col items-center gap-1 text-[11px] text-[#bda682] sm:items-end"
@@ -200,13 +200,13 @@
               href="tel:+201551683581"
               class="tracking-wider transition-colors hover:text-primary-200"
             >
-              +201551683581
+              +201032122054
             </a>
             <a
               href="mailto:midoproblems091@gmail.com"
               class="transition-colors hover:text-primary-200"
             >
-              midoproblems091@gmail.com
+              ahmedessameldeen@outlook.com
             </a>
           </div>
         </div>
