@@ -179,6 +179,14 @@
 
       <!-- View 2: Deep Dive (Split Layout) -->
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Payment Verification Modal -->
+      <ConfirmModal
+        v-model="paymentVerifyModal"
+        :title="$t('admin.verifyPayment') || 'Verify Payment'"
+        :message="$t('admin.verifyPaymentMessage') || 'Are you sure you want to approve this payment and verify the order?'"
+        @confirm="confirmPaymentAndOrder"
+      />
         <!-- Left Side: Informational -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Order Status Tracker -->
@@ -196,7 +204,8 @@
                 class="absolute top-5 left-8 right-8 h-[2px] bg-slate-200 dark:bg-slate-800 z-0"
               ></div>
               <div
-                class="absolute top-5 left-8 h-[2px] bg-[#1A1A1A] dark:bg-[#FDFDFD] z-0 transition-all duration-700 ease-out"
+                class="absolute top-5 h-[2px] bg-[#1A1A1A] dark:bg-[#FDFDFD] z-0 transition-all duration-700 ease-out"
+                style="inset-inline-start: 2rem"
                 :style="{ width: trackerProgress }"
               ></div>
 
@@ -561,7 +570,7 @@
               <!-- Approve / Verify -->
               <button
                 v-if="['pending', 'confirmed'].includes(selectedOrder.status)"
-                @click="saveOrderStatus('verified')"
+                @click="triggerVerifyAndApprove"
                 :disabled="isSaving"
                 class="btn-success w-full py-3 shadow-lg flex justify-center items-center gap-2 transition-all disabled:opacity-50"
               >
@@ -708,6 +717,7 @@ import {
 } from "lucide-vue-next";
 import PaginationBar from "@/components/PaginationBar.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 import api from "@/axios.js";
 import { getGovernorateDisplayName } from "@/utils/governorates.js";
 import { useCurrency } from "@/composables/useCurrency.js";
@@ -866,10 +876,10 @@ const trackerProgress = computed(() => {
   const map = {
     pending: 0,
     confirmed: 0,
-    verified: 33,
-    shipped: 66,
-    out_for_delivery: 66,
-    delivered: 100,
+    verified: 25,
+    shipped: 50,
+    out_for_delivery: 50,
+    delivered: 75,
     returned: 100,
   };
   return (map[status] || 0) + "%";
@@ -945,6 +955,31 @@ async function attemptRejectOrder() {
 
   if (reason === null) return; // User cancelled modal
   await saveOrderStatus("rejected", reason);
+}
+
+const paymentVerifyModal = ref(false);
+
+function triggerVerifyAndApprove() {
+  if (
+    selectedOrder.value.payment_method !== "cod" &&
+    ["pending", "pending_verification"].includes(selectedOrder.value.payment_status)
+  ) {
+    paymentVerifyModal.value = true;
+  } else {
+    saveOrderStatus("verified");
+  }
+}
+
+async function confirmPaymentAndOrder() {
+  paymentVerifyModal.value = false;
+  isSaving.value = true;
+  try {
+    await api.put(`/payments/${selectedOrder.value.id}/verify`, { status: "paid" });
+    await saveOrderStatus("verified");
+  } catch (e) {
+    showToast?.(e.response?.data?.message || "Failed to verify payment", "error");
+    isSaving.value = false;
+  }
 }
 
 async function attemptReturnOrder() {

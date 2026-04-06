@@ -8,7 +8,7 @@
       >
         <!-- Premium Backdrop -->
         <div
-          class="absolute inset-0 bg-[#050505]/40 backdrop-blur-md transition-opacity duration-500"
+          class="absolute inset-0 bg-[#050505]/40 backdrop-blur-sm transition-opacity duration-500"
           @click="$emit('update:modelValue', false)"
         />
 

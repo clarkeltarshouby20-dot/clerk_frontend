@@ -496,27 +496,39 @@
                       {{ uiText.singleStockHint }}
                     </div>
 
-                    <div v-else class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <div v-else class="space-y-6">
                       <div
-                        v-for="combo in variantCombos"
-                        :key="getVariantKey(combo.color_key, combo.size_value)"
-                        class="rounded-2xl border border-borderThin bg-surface p-4"
+                        v-for="group in groupedVariantCombos"
+                        :key="group.color_key || 'base'"
+                        class="space-y-3"
                       >
-                        <div class="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-textSecondary">
+                        <div v-if="group.color_key" class="flex items-center gap-3 pb-2 border-b border-borderThin/50">
                           <span
-                            v-if="combo.color_key && getColorState(combo.color_key)"
-                            class="h-3 w-3 rounded-full border border-borderThin shadow-sm"
-                            :style="{ backgroundColor: getColorState(combo.color_key).value || '#c8a96b' }"
+                            class="h-4 w-4 rounded-full border border-borderThin shadow-sm"
+                            :style="{ backgroundColor: getColorState(group.color_key)?.value || '#c8a96b' }"
                           ></span>
-                          {{ getComboLabel(combo) }}
+                          <span class="font-bold text-sm text-textPrimary uppercase tracking-widest">
+                            {{ getComboLabel({ color_key: group.color_key, size_value: null }) }}
+                          </span>
                         </div>
-                        <input
-                          :value="getVariantStock(combo.color_key, combo.size_value)"
-                          @input="setVariantStock(combo.color_key, combo.size_value, $event.target.value)"
-                          type="number"
-                          min="0"
-                          class="form-input"
-                        />
+                        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                          <div
+                            v-for="combo in group.combos"
+                            :key="getVariantKey(combo.color_key, combo.size_value)"
+                            class="rounded-2xl border border-borderThin bg-surface p-4"
+                          >
+                            <div class="mb-2 text-xs font-bold uppercase tracking-widest text-textSecondary">
+                              {{ combo.size_value ? combo.size_value : getComboLabel(combo) }}
+                            </div>
+                            <input
+                              :value="getVariantStock(combo.color_key, combo.size_value)"
+                              @input="setVariantStock(combo.color_key, combo.size_value, $event.target.value)"
+                              type="number"
+                              min="0"
+                              class="form-input"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -667,6 +679,19 @@ const variantCombos = computed(() => {
   if (hasColors.value) return form.colors.map((color) => ({ color_key: color.client_key, size_value: null }));
   if (hasSizes.value) return form.size_options.map((sizeValue) => ({ color_key: null, size_value: sizeValue }));
   return [];
+});
+
+const groupedVariantCombos = computed(() => {
+  const groups = [];
+  variantCombos.value.forEach((combo) => {
+    let group = groups.find((g) => g.color_key === combo.color_key);
+    if (!group) {
+      group = { color_key: combo.color_key, combos: [] };
+      groups.push(group);
+    }
+    group.combos.push(combo);
+  });
+  return groups;
 });
 
 const totalVariantStock = computed(() =>
