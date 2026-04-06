@@ -197,7 +197,7 @@
             class="flex flex-col items-center gap-1 text-[11px] text-[#bda682] sm:items-end"
           >
             <a
-              href="tel:+201551683581"
+              href="tel:+201032122054"
               class="tracking-wider transition-colors hover:text-primary-200"
             >
               +201032122054
