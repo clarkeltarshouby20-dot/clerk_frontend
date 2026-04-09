@@ -169,7 +169,7 @@
                   class="h-4 w-4 rounded-full border border-white/50 shadow-sm"
                   :style="{ backgroundColor: color.value }"
                 ></span>
-                {{ color.name }}
+                
               </button>
             </div>
           </div>
