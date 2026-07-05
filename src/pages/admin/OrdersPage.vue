@@ -28,7 +28,7 @@
     <!-- View 1: Main Table -->
     <Transition name="fade" mode="out-in">
       <div v-if="!selectedOrder" class="space-y-4">
-        <!-- Kanban Board Filters & Actions -->
+        <!-- Order pipeline toolbar -->
         <div
           class="flex flex-col sm:flex-row gap-4 mb-4 justify-between bg-surface p-4 rounded-xl border-[0.5px] border-slate-200/50 dark:border-white/10 shadow-sm"
         >
@@ -46,12 +46,13 @@
               />
             </div>
           </div>
-          <div class="text-sm font-medium text-textSecondary flex items-center">
-            {{ $t("admin.kanbanView") }}
-          </div>
+          <p class="text-xs text-textSecondary flex items-center gap-2 sm:max-w-xs sm:text-end">
+            <GripVertical class="h-4 w-4 shrink-0 opacity-60" />
+            <span>{{ $t("admin.ordersPipelineHint") }}</span>
+          </p>
         </div>
 
-        <!-- Kanban Board Area -->
+        <!-- Orders by status -->
         <div
           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 overflow-x-auto pb-4 items-start min-h-[60vh]"
         >
@@ -710,6 +711,7 @@ import {
   MapPin,
   Calendar,
   FileImage,
+  GripVertical,
   CheckCircle,
   Clock,
   Truck,

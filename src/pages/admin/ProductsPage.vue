@@ -71,7 +71,7 @@
 
             <div class="flex items-center justify-between border-t border-borderThin pt-3">
               <div class="flex flex-col">
-                <span v-if="product.old_price" class="text-[10px] font-bold text-red-500 line-through opacity-70">{{ formatCurrency(Number(product.old_price)) }}</span>
+                <span v-if="product.old_price" class="text-[10px] font-bold text-red-500 line-through opacity-70">{{ formatCurrency(Number(product.price) + Number(product.old_price)) }}</span>
                 <span class="font-black text-primary-600 dark:text-primary-400">{{ formatCurrency(Number(product.price)) }}</span>
               </div>
               <span v-if="!product.is_active" class="rounded-lg bg-yellow-100 px-2 py-1 text-[10px] font-bold uppercase text-yellow-700">Hidden</span>
@@ -88,7 +88,7 @@
     <ConfirmModal
       v-model="deleteModal"
       :title="$t('admin.deleteProduct')"
-      :message="$t('admin.confirmDelete')"
+      :message="$t('admin.confirmDeleteProduct')"
       @confirm="deleteProduct"
     />
 
@@ -160,11 +160,15 @@
                           <p class="mt-1 text-sm font-bold text-textPrimary">{{ viewedProduct.stock }}</p>
                         </div>
                         <div class="rounded-2xl bg-background px-4 py-3">
-                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.currentPrice") }}</p>
+                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.originalPrice") }}</p>
+                          <p class="mt-1 text-sm font-bold text-textPrimary">{{ formatCurrency(Number(viewedProduct.original_price || 0)) }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-background px-4 py-3">
+                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.sellingPrice") }}</p>
                           <p class="mt-1 text-sm font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(Number(viewedProduct.price || 0)) }}</p>
                         </div>
                         <div class="rounded-2xl bg-background px-4 py-3">
-                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.oldPrice") }}</p>
+                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.discount") }}</p>
                           <p class="mt-1 text-sm font-bold text-textPrimary">
                             {{ viewedProduct.old_price ? formatCurrency(Number(viewedProduct.old_price)) : "-" }}
                           </p>
@@ -174,6 +178,10 @@
                           <p class="mt-1 text-sm font-bold text-emerald-600 dark:text-emerald-400">
                             {{ formatCurrency(Number(viewedProduct.net_profit || 0)) }}
                           </p>
+                        </div>
+                        <div v-if="viewedProduct.barcode" class="rounded-2xl bg-background px-4 py-3 sm:col-span-2">
+                          <p class="text-[10px] font-black uppercase tracking-widest text-textSecondary">{{ $t("admin.pos.barcode") }}</p>
+                          <p class="mt-1 text-sm font-mono font-bold text-textPrimary">{{ viewedProduct.barcode }}</p>
                         </div>
                       </div>
                     </div>
@@ -286,6 +294,14 @@
                 {{ $t("common.close") || "Close" }}
               </button>
               <button
+                v-if="viewedProduct?.barcode"
+                type="button"
+                @click="showBarcodePrint = true"
+                class="btn-secondary w-full px-8 py-3 text-xs font-black uppercase tracking-widest sm:w-auto"
+              >
+                {{ $t("admin.pos.printBarcode") }}
+              </button>
+              <button
                 v-if="viewedProduct"
                 type="button"
                 @click="openEdit(viewedProduct)"
@@ -299,6 +315,13 @@
         </div>
       </Transition>
     </Teleport>
+
+    <PosBarcodePrintModal
+      v-if="showBarcodePrint && viewedProduct?.barcode"
+      :product-name="viewedProduct.name"
+      :barcode="viewedProduct.barcode"
+      @close="showBarcodePrint = false"
+    />
 
     <Teleport to="body">
       <Transition name="modal">
@@ -358,20 +381,34 @@
                   </div>
                   <div class="grid gap-4 rounded-2xl border border-primary-100/50 bg-primary-50/30 p-5 dark:border-primary-900/20 dark:bg-primary-900/10 md:grid-cols-4">
                     <div>
-                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-primary-600">{{ $t("admin.currentPrice") }} *</label>
+                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-primary-600">{{ $t("admin.originalPrice") }} *</label>
+                      <input v-model.number="form.original_price" type="number" min="0" step="0.01" required class="form-input" />
+                    </div>
+                    <div>
+                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.discount") }}</label>
+                      <input v-model.number="form.discount" type="number" min="0" step="0.01" class="form-input" />
+                    </div>
+                    <div>
+                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-primary-600">{{ $t("admin.sellingPrice") }} *</label>
                       <input v-model.number="form.price" type="number" min="0" step="0.01" required class="form-input" />
                     </div>
                     <div>
-                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-emerald-600">{{ $t("admin.netProfit") }} *</label>
-                      <input v-model.number="form.net_profit" type="number" min="0" step="0.01" required class="form-input" />
+                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-emerald-600">{{ $t("admin.netProfit") }}</label>
+                      <div
+                        class="form-input flex min-h-[42px] items-center bg-surface/70 font-bold"
+                        :class="
+                          computedNetProfit >= 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-red-600 dark:text-red-400'
+                        "
+                      >
+                        {{ formatCurrency(computedNetProfit) }}
+                      </div>
+                      <p class="mt-1 text-[10px] text-textSecondary">{{ $t("admin.netProfitHint") }}</p>
                     </div>
-                    <div>
-                      <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.oldPrice") }}</label>
-                      <input v-model.number="form.old_price" type="number" min="0" step="0.01" class="form-input" />
-                    </div>
-                    <div>
+                    <div class="md:col-span-4">
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ hasVariants ? uiText.fallbackStock : $t("common.stock") }}</label>
-                      <input v-model.number="form.stock" :disabled="hasVariants" type="number" min="0" class="form-input disabled:opacity-60" />
+                      <input v-model.number="form.stock" :disabled="hasVariants" type="number" min="0" class="form-input max-w-xs disabled:opacity-60" />
                     </div>
                   </div>
 
@@ -488,7 +525,7 @@
                         </p>
                       </div>
                       <div v-if="hasVariants" class="rounded-full bg-primary-500/10 px-3 py-2 text-xs font-bold text-primary-700 dark:text-primary-300">
-                        Total {{ totalVariantStock }}
+                        {{ uiText.variantStockTotal }}: {{ totalVariantStock }}
                       </div>
                     </div>
 
@@ -578,6 +615,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import ImageUploader from "@/components/ImageUploader.vue";
+import PosBarcodePrintModal from "@/components/pos/PosBarcodePrintModal.vue";
 import api from "@/axios.js";
 import { useCurrency } from "@/composables/useCurrency.js";
 
@@ -600,10 +638,35 @@ const editingProduct = ref(null);
 const saving = ref(false);
 const formError = ref("");
 const uploaderSeed = ref(0);
+
+function createDefaultForm() {
+  return {
+    name: "",
+    name_ar: "",
+    category_id: "",
+    original_price: "",
+    price: "",
+    discount: "",
+    stock: 0,
+    description: "",
+    description_ar: "",
+    specs_en: "",
+    specs_ar: "",
+    is_active: true,
+    images: [],
+    existingImages: [],
+    size_mode: "none",
+    size_options: [],
+    colors: [],
+    variantStocks: {},
+  };
+}
+
 const form = reactive(createDefaultForm());
 const detailsModal = ref(false);
 const detailsLoading = ref(false);
 const viewedProduct = ref(null);
+const showBarcodePrint = ref(false);
 
 const deleteModal = ref(false);
 const productToDelete = ref(null);
@@ -663,6 +726,8 @@ const uiText = computed(() => ({
       : "This product will use the single stock field above.",
   generalProductImages:
     locale.value === "ar" ? "صور المنتج العامة" : "General Product Images",
+  variantStockTotal:
+    locale.value === "ar" ? "المخزون الكلي" : "Combined stock",
 }));
 
 const availableSizes = computed(() => (form.size_mode === "numeric" ? NUMERIC_SIZES : ALPHA_SIZES));
@@ -757,28 +822,13 @@ watch(
   },
 );
 
-function createDefaultForm() {
-  return {
-    name: "",
-    name_ar: "",
-    category_id: "",
-    price: "",
-    net_profit: "",
-    old_price: "",
-    stock: 0,
-    description: "",
-    description_ar: "",
-    specs_en: "",
-    specs_ar: "",
-    is_active: true,
-    images: [],
-    existingImages: [],
-    size_mode: "none",
-    size_options: [],
-    colors: [],
-    variantStocks: {},
-  };
-}
+const computedNetProfit = computed(() => {
+  const original = Number(form.original_price);
+  const selling = Number(form.price);
+  if (Number.isNaN(original) || Number.isNaN(selling)) return 0;
+  // Profit = selling price − cost (original price); positive means gain, negative means loss
+  return Math.round((selling - original) * 100) / 100;
+});
 
 function createClientKey() {
   return `color-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -838,6 +888,7 @@ function closeDetails() {
   detailsModal.value = false;
   detailsLoading.value = false;
   viewedProduct.value = null;
+  showBarcodePrint.value = false;
 }
 
 async function openDetails(productCard) {
@@ -896,9 +947,9 @@ async function openEdit(productCard) {
       name: product.name || "",
       name_ar: product.name_ar || "",
       category_id: product.category_id || "",
+      original_price: product.original_price ?? Number(product.price || 0) + Number(product.net_profit || 0),
       price: product.price || "",
-      net_profit: product.net_profit ?? "",
-      old_price: product.old_price || "",
+      discount: product.old_price || "",
       stock: product.stock || 0,
       description: product.description || "",
       description_ar: product.description_ar || "",
@@ -1018,9 +1069,12 @@ function getPreparedColors() {
 }
 
 function validateForm() {
-  if (!form.name || !form.category_id || !form.price || !form.description) return "Please fill in the required product fields.";
-  if (form.net_profit === "" || Number(form.net_profit) < 0) return "Net profit must be zero or greater.";
-  if (form.old_price && Number(form.old_price) <= Number(form.price)) return "Original price must be higher than current price.";
+  if (!form.name || !form.category_id || !form.original_price || !form.price || !form.description) {
+    return "Please fill in the required product fields.";
+  }
+  if (Number(form.original_price) < 0) return "Original price must be zero or greater.";
+  if (Number(form.price) < 0) return "Selling price must be zero or greater.";
+  if (form.discount !== "" && Number(form.discount) < 0) return "Discount must be zero or greater.";
   if (form.size_mode !== "none" && form.size_options.length === 0) return "Please choose at least one size option.";
 
   const preparedColors = getPreparedColors();
@@ -1065,9 +1119,9 @@ async function saveProduct() {
     payload.append("name", form.name);
     payload.append("name_ar", form.name_ar || "");
     payload.append("category_id", form.category_id);
+    payload.append("original_price", form.original_price);
     payload.append("price", form.price);
-    payload.append("net_profit", form.net_profit);
-    payload.append("old_price", form.old_price || "");
+    payload.append("old_price", form.discount || "");
     payload.append("stock", hasVariants.value ? totalVariantStock.value : Number(form.stock || 0));
     payload.append("description", form.description);
     payload.append("description_ar", form.description_ar || "");

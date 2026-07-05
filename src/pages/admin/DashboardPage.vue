@@ -110,7 +110,7 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5 2xl:grid-cols-6">
       <template v-if="loading">
         <div
-          v-for="n in auth.isOwner ? 7 : 6"
+          v-for="n in auth.isOwner ? 9 : 8"
           :key="n"
           class="card flex flex-col gap-4 p-6"
         >
@@ -131,10 +131,11 @@
       </template>
 
       <template v-else>
-        <div
+        <RouterLink
           v-for="stat in visibleStats"
           :key="stat.key"
-          class="card group relative overflow-hidden border-none bg-surface p-6 transition-all duration-300 hover:shadow-lg"
+          :to="stat.to"
+          class="card group relative block overflow-hidden border-none bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
         >
           <div class="relative z-10 flex items-start justify-between">
             <div>
@@ -164,7 +165,11 @@
               :style="{ height: `${bar.height}%` }"
             />
           </div>
-        </div>
+
+          <p class="relative z-10 mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-textSecondary/70 transition-colors group-hover:text-primary-600">
+            {{ $t("admin.viewDetails") }}
+          </p>
+        </RouterLink>
       </template>
     </div>
 
@@ -268,9 +273,11 @@ import {
   Package,
   RefreshCcw,
   RotateCcw,
+  ScanLine,
   ShoppingBag,
   Users,
   Wallet,
+  Banknote,
 } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth.js";
 import { useCurrency } from "@/composables/useCurrency.js";
@@ -285,9 +292,11 @@ const loading = ref(true);
 const recentOrders = ref([]);
 const totals = ref({
   orders: 0,
+  posSales: 0,
   revenue: 0,
   netProfit: 0,
   returns: 0,
+  expenses: 0,
   pending: 0,
   products: 0,
   users: 0,
@@ -351,6 +360,7 @@ const allStats = computed(() => [
   {
     key: "orders",
     label: "admin.totalOrders",
+    to: "/admin/orders",
     value: totals.value.orders,
     icon: ShoppingBag,
     iconBg: "bg-primary-100 dark:bg-primary-900/30",
@@ -359,8 +369,20 @@ const allStats = computed(() => [
     sparkline: buildSparkline(totals.value.orders),
   },
   {
+    key: "posSales",
+    label: "admin.totalPosSales",
+    to: "/admin/pos/history",
+    value: totals.value.posSales,
+    icon: ScanLine,
+    iconBg: "bg-violet-100 dark:bg-violet-900/30",
+    iconColor: "text-violet-700 dark:text-violet-300",
+    neonGlowClass: "group-hover:bg-violet-200 dark:group-hover:bg-violet-800",
+    sparkline: buildSparkline(totals.value.posSales),
+  },
+  {
     key: "revenue",
     label: "admin.totalRevenue",
+    to: "/admin/orders",
     value: formatCurrency(totals.value.revenue, { minimumFractionDigits: 0 }),
     icon: BarChart2,
     iconBg: "bg-[#efe3ce] dark:bg-[#4d3c2e]",
@@ -371,6 +393,7 @@ const allStats = computed(() => [
   {
     key: "netProfit",
     label: "admin.totalNetProfit",
+    to: "/admin/orders",
     value: formatCurrency(totals.value.netProfit, { minimumFractionDigits: 0 }),
     icon: Wallet,
     iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
@@ -379,8 +402,20 @@ const allStats = computed(() => [
     sparkline: buildSparkline(totals.value.netProfit),
   },
   {
+    key: "expenses",
+    label: "admin.totalExpenses",
+    to: "/admin/expenses",
+    value: formatCurrency(totals.value.expenses, { minimumFractionDigits: 0 }),
+    icon: Banknote,
+    iconBg: "bg-rose-100 dark:bg-rose-900/30",
+    iconColor: "text-rose-700 dark:text-rose-300",
+    neonGlowClass: "group-hover:bg-rose-200 dark:group-hover:bg-rose-800",
+    sparkline: buildSparkline(totals.value.expenses),
+  },
+  {
     key: "returns",
     label: "admin.totalReturns",
+    to: "/admin/orders",
     value: totals.value.returns,
     icon: RotateCcw,
     iconBg: "bg-[#f2e6d4] dark:bg-[#4e3f30]",
@@ -391,6 +426,7 @@ const allStats = computed(() => [
   {
     key: "pending",
     label: "admin.pendingPayments",
+    to: "/admin/payments",
     value: totals.value.pending,
     icon: CreditCard,
     iconBg: "bg-[#f1dcc0] dark:bg-[#574028]",
@@ -401,6 +437,7 @@ const allStats = computed(() => [
   {
     key: "products",
     label: "admin.totalProducts",
+    to: "/admin/products",
     value: totals.value.products,
     icon: Package,
     iconBg: "bg-[#e7d6bd] dark:bg-[#463628]",
@@ -411,6 +448,7 @@ const allStats = computed(() => [
   {
     key: "users",
     label: "admin.totalUsers",
+    to: "/admin/users",
     value: totals.value.users,
     icon: Users,
     iconBg: "bg-[#f3e7d3] dark:bg-[#514032]",
@@ -628,9 +666,11 @@ async function fetchDashboardStats() {
 
     recentOrders.value = stats.recent_orders || [];
     totals.value.orders = Number(stats.total_orders || 0);
+    totals.value.posSales = Number(stats.total_pos_sales || 0);
     totals.value.revenue = Number(stats.delivered_revenue || 0);
     totals.value.netProfit = Number(stats.delivered_net_profit || 0);
     totals.value.returns = Number(stats.total_returns || 0);
+    totals.value.expenses = Number(stats.total_expenses || 0);
     totals.value.products = Number(stats.total_products || 0);
     totals.value.pending = Number(stats.pending_payments || 0);
     totals.value.users = Number(stats.total_users || 0);

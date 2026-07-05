@@ -87,6 +87,44 @@
     background: rgb(var(--color-primary) / 0.22);
     color: rgb(var(--color-text-primary));
   }
+
+  /* Scrollbars — match Clark gold/brown identity */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-primary) / 0.55) rgb(var(--color-surface-strong) / 0.85);
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: rgb(var(--color-surface-strong) / 0.55);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--color-primary) / 0.72),
+      rgb(var(--color-primary-hover) / 0.82)
+    );
+    border-radius: 999px;
+    border: 2px solid rgb(var(--color-surface-strong) / 0.55);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--color-primary-hover) / 0.88),
+      rgb(var(--color-primary) / 0.95)
+    );
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: rgb(var(--color-surface));
+  }
 }
 
 @layer components {
@@ -243,6 +281,40 @@
   }
   .sidebar-link.active {
     @apply bg-primary-50 dark:bg-white/10 text-primary-700 dark:text-primary-300 pointer-events-none;
+  }
+
+  /* Thinner scrollbars for tables, modals, sidebar */
+  .subtle-scrollbar,
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-primary) / 0.5) transparent;
+  }
+
+  .subtle-scrollbar::-webkit-scrollbar,
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .subtle-scrollbar::-webkit-scrollbar-track,
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 999px;
+  }
+
+  .subtle-scrollbar::-webkit-scrollbar-thumb,
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-primary) / 0.45);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .subtle-scrollbar::-webkit-scrollbar-thumb:hover,
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-primary) / 0.7);
+    border: 1px solid transparent;
+    background-clip: padding-box;
   }
 }
 

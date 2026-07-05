@@ -138,8 +138,8 @@
         <span class="text-base sm:text-lg font-extrabold text-textPrimary shrink-0">
           {{ formatCurrency(product.price) }}
         </span>
-        <span v-if="product.old_price" class="text-xs font-semibold text-red-500 line-through opacity-70">
-          {{ formatCurrency(product.old_price) }}
+        <span v-if="listPriceBeforeDiscount" class="text-xs font-semibold text-red-500 line-through opacity-70">
+          {{ formatCurrency(listPriceBeforeDiscount) }}
         </span>
       </div>
     </div>
@@ -224,11 +224,17 @@ const optimizedImageUrl = computed(() => {
   return base;
 });
 
+const listPriceBeforeDiscount = computed(() => {
+  const discount = Number(props.product.old_price || 0);
+  if (!discount || discount <= 0) return null;
+  return Number(props.product.price) + discount;
+});
+
 const discountPercentage = computed(() => {
-  if (!props.product.old_price || props.product.old_price <= props.product.price)
-    return 0;
-  const diff = props.product.old_price - props.product.price;
-  return Math.round((diff / props.product.old_price) * 100);
+  const discount = Number(props.product.old_price || 0);
+  const listPrice = listPriceBeforeDiscount.value;
+  if (!discount || !listPrice) return 0;
+  return Math.round((discount / listPrice) * 100);
 });
 
 const hasPurchaseChoices = computed(() => {

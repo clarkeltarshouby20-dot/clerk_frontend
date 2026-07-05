@@ -276,6 +276,9 @@ import {
   Users,
   MessageSquare,
   Inbox,
+  ScanLine,
+  History,
+  Banknote,
 } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth.js";
 import { useUiStore } from "@/stores/ui.js";
@@ -302,7 +305,10 @@ const allNavLinks = computed(() => [
   { to: "/admin/products", icon: Package, label: t("admin.products") },
   { to: "/admin/categories", icon: Tag, label: t("admin.categories") },
   { to: "/admin/coupons", icon: Ticket, label: t("admin.coupons.title") || "Coupons" },
+  { to: "/admin/expenses", icon: Banknote, label: t("admin.expenses.title") },
   { to: "/admin/orders", icon: ShoppingBag, label: t("admin.orders") },
+  { to: "/admin/pos", icon: ScanLine, label: t("admin.pos.title") },
+  { to: "/admin/pos/history", icon: History, label: t("admin.pos.history") },
   // { to: "/admin/payments", icon: CreditCard, label: t("admin.payments") },
   { to: "/admin/shipping", icon: Truck, label: t("settings.sectionShipping") },
   {

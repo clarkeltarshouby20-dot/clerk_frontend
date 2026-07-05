@@ -126,7 +126,34 @@
               </p>
             </div>
           </a>
- 
+
+          <!-- Instagram -->
+          <a
+            v-if="settings.socialInstagram"
+            :href="settings.socialInstagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-4 group"
+          >
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-none bg-black dark:bg-white text-white dark:text-black"
+            >
+              <Instagram class="w-5 h-5 stroke-[1.5]" />
+            </div>
+            <div>
+              <p
+                class="text-sm font-bold uppercase tracking-widest text-textPrimary/50 mb-1"
+              >
+                {{ $t("contact.socialLabels.instagram") }}
+              </p>
+              <p
+                class="font-medium text-textPrimary group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors"
+              >
+                {{ $t("contact.social.instagram") }}
+              </p>
+            </div>
+          </a>
+
           <!-- X (Twitter) -->
           <a
             v-if="settings.socialX"
@@ -165,7 +192,7 @@
             <div
               class="w-12 h-12 flex items-center justify-center rounded-none bg-black dark:bg-white text-white dark:text-black"
             >
-              <MessageCircle class="w-5 h-5 stroke-[1.5]" />
+              <WhatsappIcon class="w-5 h-5" />
             </div>
             <div>
               <p
@@ -240,7 +267,8 @@
  
 <script setup>
 import { ref, reactive, inject } from "vue";
-import { MessageCircle, Mail, Send, Facebook, Twitter } from "lucide-vue-next";
+import { Mail, Send, Facebook, Twitter, Instagram } from "lucide-vue-next";
+import WhatsappIcon from "@/components/icons/WhatsappIcon.vue";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useI18n } from "vue-i18n";
 import api from "@/axios.js";

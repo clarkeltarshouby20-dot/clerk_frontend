@@ -113,6 +113,7 @@
             :to="`/products?category_id=${cat.id}`"
             class="group relative overflow-hidden rounded-3xl aspect-[4/5] sm:aspect-square md:aspect-[4/5] flex items-end transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg border border-borderThin"
             v-animate="{ delay: index * 100 }"
+            @click="trackCategoryVisit(cat.id)"
           >
             <img
               :src="
@@ -209,7 +210,7 @@
       </div>
     </section>
 
-    <!-- ── Promo Blocks ───────────────────────────────────── -->
+    <!-- ── Most Visited Categories (Promo Blocks) ─────────── -->
     <section class="py-24 md:py-32 bg-background relative overflow-hidden">
       <!-- Decor -->
       <div
@@ -219,85 +220,60 @@
       <div
         class="section-container grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10"
       >
-        <!-- Promo 1 -->
-        <div
-          class="relative overflow-hidden rounded-[2.5rem] min-h-[400px] md:min-h-[500px] flex flex-col justify-end p-10 group shadow-xl border border-borderThin"
-        >
-          <div
-            class="absolute inset-0 bg-surface group-hover:scale-105 transition-transform duration-700 ease-out"
-            :style="{
-              backgroundImage: `url(${optimizeImg('https://images.unsplash.com/photo-1549298916-b41d501d3772', 1000, 75)})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }"
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-colors duration-500"
-          ></div>
-          <div
-            class="relative z-10 w-full transform transition-transform duration-500 group-hover:-translate-y-2"
+        <template v-if="!loadingMostVisited">
+          <RouterLink
+            v-for="(cat, index) in mostVisitedCategories"
+            :key="cat.id"
+            :to="`/products?category_id=${cat.id}`"
+            class="relative overflow-hidden rounded-[2.5rem] min-h-[400px] md:min-h-[500px] flex flex-col justify-end p-10 group shadow-xl border border-borderThin"
+            @click="trackCategoryVisit(cat.id)"
           >
-            <p
-              class="font-bold text-xs tracking-widest text-primary-400 uppercase mb-3 shadow-sm"
+            <div
+              class="absolute inset-0 bg-surface group-hover:scale-105 transition-transform duration-700 ease-out"
+              :style="{
+                backgroundImage: `url(${categoryBg(cat)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-colors duration-500"
+            ></div>
+            <div
+              class="relative z-10 w-full transform transition-transform duration-500 group-hover:-translate-y-2"
             >
-              {{ $t("home.newArrivals") }}
-            </p>
-            <h3
-              class="font-extrabold text-4xl md:text-5xl text-white mb-6 leading-tight drop-shadow-lg"
-            >
-              {{ $t("home.premiumWatches") }}
-            </h3>
-            <RouterLink
-              to="/products"
-              class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-white hover:text-primary-400 transition-colors"
-            >
-              {{ $t("home.shopNow") }}
+              <p
+                class="font-bold text-xs tracking-widest uppercase mb-3 shadow-sm"
+                :class="index % 2 === 0 ? 'text-primary-400' : 'text-violet-400'"
+              >
+                {{ $t("home.mostVisited") }}
+              </p>
+              <h3
+                class="font-extrabold text-4xl md:text-5xl text-white mb-6 leading-tight drop-shadow-lg"
+              >
+                {{ ui.locale === "ar" && cat.name_ar ? cat.name_ar : cat.name }}
+              </h3>
               <span
-                class="w-6 h-[2px] bg-white group-hover:bg-primary-400 transition-colors"
-              ></span>
-            </RouterLink>
-          </div>
-        </div>
+                class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-white transition-colors"
+                :class="index % 2 === 0 ? 'group-hover:text-primary-400' : 'group-hover:text-violet-400'"
+              >
+                {{ $t("home.shopNow") }}
+                <span
+                  class="w-6 h-[2px] bg-white transition-colors"
+                  :class="index % 2 === 0 ? 'group-hover:bg-primary-400' : 'group-hover:bg-violet-400'"
+                ></span>
+              </span>
+            </div>
+          </RouterLink>
+        </template>
 
-        <!-- Promo 2 -->
-        <div
-          class="relative overflow-hidden rounded-[2.5rem] min-h-[400px] md:min-h-[500px] flex flex-col justify-end p-10 group shadow-xl border border-borderThin"
-        >
+        <template v-else>
           <div
-            class="absolute inset-0 bg-surface group-hover:scale-105 transition-transform duration-700 ease-out"
-            :style="{
-              backgroundImage: `url(${optimizeImg('https://images.unsplash.com/photo-1491933382434-500287f9b54b', 1000, 75)})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }"
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-colors duration-500"
+            v-for="i in 2"
+            :key="i"
+            class="min-h-[400px] md:min-h-[500px] bg-surface animate-pulse rounded-[2.5rem]"
           ></div>
-          <div
-            class="relative z-10 w-full transform transition-transform duration-500 group-hover:-translate-y-2"
-          >
-            <p
-              class="font-bold text-xs tracking-widest text-violet-400 uppercase mb-3 shadow-sm"
-            >
-              {{ $t("home.bestDeals") }}
-            </p>
-            <h3
-              class="font-extrabold text-4xl md:text-5xl text-white mb-6 leading-tight drop-shadow-lg"
-            >
-              {{ $t("home.smartGear") }}
-            </h3>
-            <RouterLink
-              to="/products"
-              class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-white hover:text-violet-400 transition-colors"
-            >
-              {{ $t("home.shopNow") }}
-              <span
-                class="w-6 h-[2px] bg-white group-hover:bg-violet-400 transition-colors"
-              ></span>
-            </RouterLink>
-          </div>
-        </div>
+        </template>
       </div>
     </section>
   </div>
@@ -306,10 +282,10 @@
 <script setup>
 import { ref, onMounted, inject, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronRight } from "lucide-vue-next";
 import ProductCard from "@/components/ProductCard.vue";
 import { useUiStore } from "@/stores/ui.js";
 import { useSettingsStore } from "@/stores/settings.js";
+import { trackCategoryVisit } from "@/composables/useCategoryVisit.js";
 import api from "@/axios.js";
 
 const { t } = useI18n();
@@ -326,8 +302,10 @@ const heroSrc = computed(() => settingsStore.heroImageUrl || FALLBACK_HERO);
 
 const categories = ref([]);
 const featuredProducts = ref([]);
+const mostVisitedCategories = ref([]);
 const loadingCats = ref(true);
 const loadingProds = ref(true);
+const loadingMostVisited = ref(true);
 
 onMounted(async () => {
   try {
@@ -351,7 +329,25 @@ onMounted(async () => {
   } finally {
     loadingProds.value = false;
   }
+
+  try {
+    const { data } = await api.get("/categories/most-visited", {
+      params: { limit: 2 },
+    });
+    mostVisitedCategories.value = (data.data || []).filter((c) => c.is_active);
+  } catch (e) {
+    showToast?.(t("common.error"), "error");
+  } finally {
+    loadingMostVisited.value = false;
+  }
 });
+
+function categoryBg(cat) {
+  const url =
+    optimizeImg(cat.image_url, 1000, 75) ||
+    `https://placehold.co/1000x625/1e293b/94a3b8?text=${encodeURIComponent(cat.name?.charAt(0) || "?")}`;
+  return url;
+}
 
 /**
  * Multi-CDN Image Optimization Helper

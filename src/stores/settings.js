@@ -47,6 +47,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const footerScripts = computed(() => data.value.footer_scripts || "");
   
   const socialFacebook = computed(() => data.value.social_facebook || "");
+  const socialInstagram = computed(() => data.value.social_instagram || "");
   const socialX = computed(() => data.value.social_x || "");
   const socialTelegram = computed(() => data.value.social_telegram || "");
   const socialGmail = computed(() => data.value.social_gmail || "");
@@ -126,6 +127,7 @@ export const useSettingsStore = defineStore("settings", () => {
     headerScripts,
     footerScripts,
     socialFacebook,
+    socialInstagram,
     socialX,
     socialTelegram,
     socialGmail,

@@ -14,9 +14,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Proxy API requests to the backend during development
+      // Local backend in development (POS and other new routes may not exist on Vercel yet)
       "/api": {
-        target: "https://clark-ecommerce-server-brown.vercel.app",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },

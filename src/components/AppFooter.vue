@@ -45,6 +45,15 @@
               <Facebook class="h-4 w-4" />
             </a>
             <a
+              v-if="settingsStore.socialInstagram"
+              :href="settingsStore.socialInstagram"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex h-10 w-10 items-center justify-center rounded-full border border-primary-400/20 bg-white/5 shadow-sm transition-colors hover:bg-primary-500/15 hover:text-primary-200"
+            >
+              <Instagram class="h-4 w-4" />
+            </a>
+            <a
               v-if="settingsStore.socialX"
               :href="settingsStore.socialX"
               target="_blank"
@@ -60,7 +69,7 @@
               rel="noopener noreferrer"
               class="flex h-10 w-10 items-center justify-center rounded-full border border-primary-400/20 bg-white/5 shadow-sm transition-colors hover:bg-primary-500/15 hover:text-primary-200"
             >
-              <MessageCircle class="h-4 w-4" />
+              <WhatsappIcon class="h-4 w-4" />
             </a>
             <a
               v-if="settingsStore.socialTelegram"
@@ -221,10 +230,11 @@ import {
   ChevronRight,
   Facebook,
   Twitter,
-  MessageCircle,
+  Instagram,
   Send,
   Mail,
 } from "lucide-vue-next";
+import WhatsappIcon from "@/components/icons/WhatsappIcon.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useUiStore } from "@/stores/ui.js";

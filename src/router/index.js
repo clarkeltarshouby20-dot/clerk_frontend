@@ -50,6 +50,9 @@ const AdminReviews = () => import("@/pages/admin/ReviewsPage.vue");
 const AdminMessages = () => import("@/pages/admin/MessagesPage.vue");
 const AdminCoupons = () => import("@/pages/admin/CouponsPage.vue");
 const AdminShipping = () => import("@/pages/admin/ShippingPage.vue");
+const AdminExpenses = () => import("@/pages/admin/ExpensesPage.vue");
+const PosPage = () => import("@/pages/admin/PosPage.vue");
+const PosHistoryPage = () => import("@/pages/admin/PosHistoryPage.vue");
 
 // ── Route Definitions ─────────────────────────────────────────────────────────
 const routes = [
@@ -192,6 +195,21 @@ const routes = [
         path: "coupons",
         name: "admin-coupons",
         component: AdminCoupons,
+      },
+      {
+        path: "expenses",
+        name: "admin-expenses",
+        component: AdminExpenses,
+      },
+      {
+        path: "pos",
+        name: "admin-pos",
+        component: PosPage,
+      },
+      {
+        path: "pos/history",
+        name: "admin-pos-history",
+        component: PosHistoryPage,
       },
     ],
   },

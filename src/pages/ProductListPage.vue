@@ -201,6 +201,7 @@ import ProductCard from "@/components/ProductCard.vue";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import { useUiStore } from "@/stores/ui.js";
+import { trackCategoryVisit } from "@/composables/useCategoryVisit.js";
 import api from "@/axios.js";
 
 const route = useRoute();
@@ -306,14 +307,18 @@ function resetFilters() {
 
 // Watchers for reactive fetching
 watch(searchQuery, () => debouncedFetch());
-watch(selectedCategory, () => fetchProducts(1));
+watch(selectedCategory, (categoryId) => {
+  if (categoryId) trackCategoryVisit(categoryId);
+  fetchProducts(1);
+});
 
 // Intersection Observer for Infinite Scroll
 let observer;
 onMounted(() => {
   loadCategories();
-  // If we have query params, they will be handled by the watchers or the initial fetch
-  // but let's just do one clean fetch.
+  if (selectedCategory.value) {
+    trackCategoryVisit(selectedCategory.value);
+  }
   fetchProducts(1);
 
   // Initialize Intersection Observer

@@ -76,7 +76,7 @@
             </span>
             <div v-if="discountPercentage" class="flex flex-col items-start">
               <span class="text-lg font-bold text-red-500 line-through opacity-50 decoration-2">
-                {{ formatCurrency(product.old_price) }}
+                {{ formatCurrency(listPriceBeforeDiscount) }}
               </span>
               <span class="text-[11px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full uppercase tracking-tighter mt-0.5 shadow-sm">
                 {{ ui.locale === 'ar' ? `وفر ${discountPercentage}%` : `-${discountPercentage}% OFF` }}
@@ -551,11 +551,17 @@ const displayName = computed(() =>
     : product.value?.name || "",
 );
 
+const listPriceBeforeDiscount = computed(() => {
+  const discount = Number(product.value?.old_price || 0);
+  if (!discount || discount <= 0) return null;
+  return Number(product.value?.price || 0) + discount;
+});
+
 const discountPercentage = computed(() => {
-  if (!product.value?.old_price || product.value.old_price <= product.value.price)
-    return 0;
-  const diff = product.value.old_price - product.value.price;
-  return Math.round((diff / product.value.old_price) * 100);
+  const discount = Number(product.value?.old_price || 0);
+  const listPrice = listPriceBeforeDiscount.value;
+  if (!discount || !listPrice) return 0;
+  return Math.round((discount / listPrice) * 100);
 });
 
 const displayDescription = computed(() =>

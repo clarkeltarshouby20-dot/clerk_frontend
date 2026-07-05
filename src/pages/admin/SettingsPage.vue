@@ -309,41 +309,6 @@
           </div>
         </section>
 
-        <!-- Scripts Section -->
-        <section id="scripts" class="card group overflow-hidden border-borderThin hover:border-primary-500/30 transition-all duration-500">
-          <div class="p-8 border-b border-borderThin bg-surface/30">
-            <h3 class="font-black text-textPrimary tracking-widest uppercase text-xs flex items-center gap-3">
-              <Code2 class="w-5 h-5 text-primary-500" />
-              {{ $t("settings.sectionScripts") }}
-            </h3>
-          </div>
-          <div class="p-8 space-y-8">
-            <div class="flex items-start gap-4 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 transition-colors group-hover:bg-red-500/10">
-              <ShieldAlert class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p class="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider leading-relaxed">
-                {{ $t("settings.scriptsWarning") }}
-              </p>
-            </div>
-
-            <div class="grid gap-8">
-              <div class="space-y-3">
-                <label class="form-label text-[10px] uppercase font-black flex items-center justify-between">
-                  {{ $t("settings.headerScripts") }}
-                  <span class="text-textSecondary opacity-50 font-normal normal-case italic">In head tag</span>
-                </label>
-                <textarea v-model="form.header_scripts" rows="6" :readonly="!auth.isOwner" class="form-input text-xs font-mono h-40" />
-              </div>
-              <div class="space-y-3">
-                <label class="form-label text-[10px] uppercase font-black flex items-center justify-between">
-                  {{ $t("settings.footerScripts") }}
-                  <span class="text-textSecondary opacity-50 font-normal normal-case italic">Before /body tag</span>
-                </label>
-                <textarea v-model="form.footer_scripts" rows="6" :readonly="!auth.isOwner" class="form-input text-xs font-mono h-40" />
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- Social Section -->
         <section id="social" class="card group overflow-hidden border-borderThin hover:border-primary-500/30 transition-all duration-500">
           <div class="p-8 border-b border-borderThin bg-surface/30">
@@ -405,10 +370,8 @@ import {
   Building2,
   MessageSquare,
   BarChart2,
-  Code2,
   CheckCircle,
     AlertCircle,
-    ShieldAlert,
     Upload,
     Image as ImageIcon,
     Share2,
@@ -423,6 +386,7 @@ import {
 } from "lucide-vue-next";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import ImageUploadSingle from "@/components/ImageUploadSingle.vue";
+import WhatsappIcon from "@/components/icons/WhatsappIcon.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useSettingsStore } from "@/stores/settings.js";
 
@@ -438,15 +402,15 @@ const navSections = computed(() => [
   { id: "identity", icon: Building2, label: t("settings.sectionIdentity") },
   { id: "contact", icon: MessageSquare, label: t("settings.sectionContact") },
   { id: "analytics", icon: BarChart2, label: t("settings.sectionAds") },
-  { id: "scripts", icon: Code2, label: t("settings.sectionScripts") },
   { id: "social", icon: Share2, label: t("settings.sectionSocial") },
   { id: "payment", icon: CreditCard, label: t("settings.sectionPayment") },
 ]);
 
 const socialPlatforms = [
   { key: "social_facebook", label: "Facebook", icon: Facebook, type: "url", placeholder: "https://facebook.com/..." },
+  { key: "social_instagram", label: "Instagram", icon: Instagram, type: "url", placeholder: "https://instagram.com/..." },
   { key: "social_x", label: "X", icon: Twitter, type: "url", placeholder: "https://x.com/..." },
-  { key: "social_whatsapp", label: "Whatsapp", icon: MessageSquare, type: "text", placeholder: "https://wa.me/..." },
+  { key: "social_whatsapp", label: "Whatsapp", icon: WhatsappIcon, type: "text", placeholder: "https://wa.me/..." },
   { key: "social_telegram", label: "Telegram", icon: Send, type: "url", placeholder: "https://t.me/..." },
   { key: "social_gmail", label: "Gmail", icon: Mail, type: "email", placeholder: "contact@example.com" },
 ];
@@ -506,9 +470,8 @@ const form = reactive({
   currency_code: "",
   google_analytics_id: "",
   google_ads_client_id: "",
-  header_scripts: "",
-  footer_scripts: "",
   social_facebook: "",
+  social_instagram: "",
   social_x: "",
   social_whatsapp: "",
   social_telegram: "",
@@ -542,9 +505,8 @@ function syncFormFromStore() {
   form.currency_code = d.currency_code || "EGP";
   form.google_analytics_id = d.google_analytics_id || "";
   form.google_ads_client_id = d.google_ads_client_id || "";
-  form.header_scripts = d.header_scripts || "";
-  form.footer_scripts = d.footer_scripts || "";
   form.social_facebook = d.social_facebook || "";
+  form.social_instagram = d.social_instagram || "";
   form.social_x = d.social_x || "";
   form.social_whatsapp = d.social_whatsapp || "";
   form.social_telegram = d.social_telegram || "";
@@ -595,9 +557,8 @@ async function saveSettings() {
       whatsapp_number: form.whatsapp_number ?? "",
       google_analytics_id: form.google_analytics_id ?? "",
       google_ads_client_id: form.google_ads_client_id ?? "",
-      header_scripts: form.header_scripts ?? "",
-      footer_scripts: form.footer_scripts ?? "",
       social_facebook: form.social_facebook ?? "",
+      social_instagram: form.social_instagram ?? "",
       social_x: form.social_x ?? "",
       social_whatsapp: form.social_whatsapp ?? "",
       social_telegram: form.social_telegram ?? "",

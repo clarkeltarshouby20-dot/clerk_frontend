@@ -43,29 +43,48 @@
           >
             {{ cat.name_ar }}
           </p>
-          <span
-            :class="[
-              'badge mt-1',
-              cat.is_active
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-gray-100 text-textSecondary',
-            ]"
-          >
-            {{
-              cat.is_active
-                ? $t("admin.statusActive")
-                : $t("admin.statusHidden")
-            }}
-          </span>
+          <div class="mt-1 flex flex-wrap gap-1.5">
+            <span
+              :class="[
+                'badge',
+                cat.is_active
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-gray-100 text-textSecondary',
+              ]"
+            >
+              {{
+                cat.is_active
+                  ? $t("admin.statusActive")
+                  : $t("admin.statusHidden")
+              }}
+            </span>
+            <span
+              v-if="hasCategoryDiscount(cat)"
+              class="badge inline-flex items-center gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+            >
+              <Percent class="h-3 w-3" />
+              {{ formatCategoryDiscountLabel(cat) }}
+            </span>
+          </div>
         </div>
         <div class="flex flex-col gap-2">
           <button
+            type="button"
+            :title="$t('admin.categoryDiscountBtn')"
+            @click="openDiscount(cat)"
+            class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+          >
+            <Percent class="w-4 h-4" />
+          </button>
+          <button
+            type="button"
             @click="openEdit(cat)"
             class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20"
           >
             <Edit2 class="w-4 h-4" />
           </button>
           <button
+            type="button"
             @click="askDelete(cat)"
             class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
           >
@@ -82,6 +101,114 @@
       :message="$t('admin.confirmDelete')"
       @confirm="deleteCategory"
     />
+
+    <!-- Category discount modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="discountModal"
+          class="admin-modal-shell"
+          @click.self="discountModal = false"
+        >
+          <div class="admin-modal-panel max-w-md">
+            <div class="admin-modal-header">
+              <div>
+                <h3 class="text-lg font-bold tracking-tight text-textPrimary">
+                  {{ $t("admin.categoryDiscount.title") }}
+                </h3>
+                <p v-if="discountCat" class="mt-1 text-sm text-textSecondary">
+                  {{ discountCat.name }}
+                </p>
+              </div>
+              <button
+                type="button"
+                class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl text-textSecondary transition hover:bg-surface"
+                @click="discountModal = false"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
+
+            <form @submit.prevent="applyDiscount">
+              <div class="admin-modal-body space-y-4">
+                <p class="text-sm text-textSecondary">
+                  {{ $t("admin.categoryDiscount.hint") }}
+                </p>
+
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="flex-1 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors"
+                    :class="
+                      discountForm.type === 'percent'
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-background text-textSecondary hover:text-textPrimary'
+                    "
+                    @click="discountForm.type = 'percent'"
+                  >
+                    {{ $t("admin.categoryDiscount.typePercent") }}
+                  </button>
+                  <button
+                    type="button"
+                    class="flex-1 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors"
+                    :class="
+                      discountForm.type === 'fixed'
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-background text-textSecondary hover:text-textPrimary'
+                    "
+                    @click="discountForm.type = 'fixed'"
+                  >
+                    {{ $t("admin.categoryDiscount.typeFixed") }}
+                  </button>
+                </div>
+
+                <div>
+                  <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">
+                    {{ $t("admin.categoryDiscount.valueLabel") }}
+                  </label>
+                  <input
+                    v-model.number="discountForm.value"
+                    type="number"
+                    min="0.01"
+                    :max="discountForm.type === 'percent' ? 100 : undefined"
+                    step="0.01"
+                    required
+                    class="form-input"
+                    :placeholder="
+                      discountForm.type === 'percent'
+                        ? $t('admin.categoryDiscount.valuePlaceholderPercent')
+                        : $t('admin.categoryDiscount.valuePlaceholderFixed')
+                    "
+                  />
+                </div>
+
+                <p v-if="discountError" class="text-xs font-bold text-red-500">
+                  {{ discountError }}
+                </p>
+              </div>
+
+              <div class="admin-modal-footer">
+                <button
+                  type="button"
+                  class="btn-secondary w-full sm:w-auto"
+                  @click="discountModal = false"
+                >
+                  {{ $t("common.cancel") }}
+                </button>
+                <button
+                  type="submit"
+                  class="btn-primary min-w-[120px] w-full sm:w-auto"
+                  :disabled="discountSaving"
+                >
+                  <LoadingSpinner v-if="discountSaving" :size="18" />
+                  {{ $t("admin.categoryDiscount.apply") }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Create / Edit modal -->
     <Teleport to="body">
@@ -198,14 +325,16 @@
 
 <script setup>
 import { ref, reactive, onMounted, inject } from "vue";
-import { Plus, Edit2, Trash2, X, Image as ImageIcon } from "lucide-vue-next";
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Percent } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import ImageUploadSingle from "@/components/ImageUploadSingle.vue";
 import api from "@/axios.js";
+import { useCurrency } from "@/composables/useCurrency.js";
 
 const { t } = useI18n();
+const { formatCurrency } = useCurrency();
 const showToast = inject("showToast");
 
 const categories = ref([]);
@@ -216,6 +345,14 @@ const saving = ref(false);
 const formError = ref("");
 const deleteModal = ref(false);
 const catToDelete = ref(null);
+const discountModal = ref(false);
+const discountCat = ref(null);
+const discountSaving = ref(false);
+const discountError = ref("");
+const discountForm = reactive({
+  type: "percent",
+  value: "",
+});
 const form = reactive({
   name: "",
   name_ar: "",
@@ -224,8 +361,6 @@ const form = reactive({
   is_active: true,
   imageFile: null,
 });
-
-// function onImageSelect(e) { ... } removed in favor of ImageUploadSingle
 
 async function fetchCategories() {
   loading.value = true;
@@ -261,10 +396,79 @@ function openEdit(cat) {
     slug: cat.slug || "",
     sort_order: cat.sort_order || 0,
     is_active: !!cat.is_active,
-    imageFile: cat.image_url || null, // ImageUploadSingle handles string (URL) or File
+    imageFile: cat.image_url || null,
   });
   formError.value = "";
   formModal.value = true;
+}
+
+function hasCategoryDiscount(cat) {
+  return (
+    (cat.discount_type === "percent" || cat.discount_type === "fixed") &&
+    Number(cat.discount_value) > 0
+  );
+}
+
+function formatCategoryDiscountLabel(cat) {
+  if (cat.discount_type === "percent") {
+    return `-${Number(cat.discount_value)}%`;
+  }
+  return `-${formatCurrency(Number(cat.discount_value))}`;
+}
+
+function openDiscount(cat) {
+  discountCat.value = cat;
+  if (hasCategoryDiscount(cat)) {
+    discountForm.type = cat.discount_type;
+    discountForm.value = Number(cat.discount_value);
+  } else {
+    discountForm.type = "percent";
+    discountForm.value = "";
+  }
+  discountError.value = "";
+  discountModal.value = true;
+}
+
+function validateDiscountForm() {
+  const value = Number(discountForm.value);
+  if (!value || value <= 0) {
+    discountError.value = t("admin.categoryDiscount.invalidValue");
+    return false;
+  }
+  if (discountForm.type === "percent" && value > 100) {
+    discountError.value = t("admin.categoryDiscount.invalidValue");
+    return false;
+  }
+  discountError.value = "";
+  return true;
+}
+
+async function applyDiscount() {
+  if (!validateDiscountForm() || !discountCat.value) return;
+
+  discountSaving.value = true;
+  try {
+    const { data } = await api.post(
+      `/categories/${discountCat.value.id}/apply-discount`,
+      {
+        discount_type: discountForm.type,
+        discount_value: Number(discountForm.value),
+      },
+    );
+    discountModal.value = false;
+    await fetchCategories();
+    showToast?.(
+      t("admin.categoryDiscount.success", {
+        count: data.data?.updated_count || 0,
+      }),
+      "success",
+    );
+  } catch (e) {
+    discountError.value =
+      e.response?.data?.message || t("admin.categoryDiscount.failed");
+  } finally {
+    discountSaving.value = false;
+  }
 }
 
 async function saveCategory() {
@@ -311,7 +515,6 @@ async function deleteCategory() {
     await api.delete(`/categories/${catToDelete.value.id}`);
     showToast?.(t("common.delete") + " ✓", "success");
     deleteModal.value = false;
-    // Update local state instead of re-fetching
     categories.value = categories.value.filter(
       (c) => c.id !== catToDelete.value.id,
     );
