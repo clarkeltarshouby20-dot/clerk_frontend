@@ -361,7 +361,16 @@
                   <div class="grid gap-4 md:grid-cols-2">
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("common.name") }} *</label>
-                      <input v-model="form.name" required class="form-input" />
+                      <input
+                        :ref="el => fieldRefs.name = el"
+                        v-model="form.name"
+                        @input="clearError('name')"
+                        class="form-input"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.name }"
+                      />
+                      <p v-if="fieldErrors.name" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.name }}
+                      </p>
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.arabicName") }}</label>
@@ -369,10 +378,19 @@
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("common.category") }} *</label>
-                      <select v-model="form.category_id" required class="form-input">
+                      <select
+                        :ref="el => fieldRefs.category_id = el"
+                        v-model="form.category_id"
+                        @change="clearError('category_id')"
+                        class="form-input"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.category_id }"
+                      >
                         <option value="" disabled>{{ $t("admin.selectCategory") }}</option>
                         <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                       </select>
+                      <p v-if="fieldErrors.category_id" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.category_id }}
+                      </p>
                     </div>
                     <label class="flex items-center justify-between rounded-2xl border border-borderThin bg-surface px-4 py-3">
                       <span class="text-sm font-semibold text-textSecondary">{{ $t("admin.isActive") }}</span>
@@ -382,15 +400,45 @@
                   <div class="grid gap-4 rounded-2xl border border-primary-100/50 bg-primary-50/30 p-5 dark:border-primary-900/20 dark:bg-primary-900/10 md:grid-cols-4">
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-primary-600">{{ $t("admin.originalPrice") }} *</label>
-                      <input v-model.number="form.original_price" type="number" min="0" step="0.01" required class="form-input" />
+                      <input
+                        :ref="el => fieldRefs.original_price = el"
+                        v-model.number="form.original_price"
+                        @input="clearError('original_price')"
+                        type="number" min="0" step="0.01"
+                        class="form-input"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.original_price }"
+                      />
+                      <p v-if="fieldErrors.original_price" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.original_price }}
+                      </p>
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.discount") }}</label>
-                      <input v-model.number="form.discount" type="number" min="0" step="0.01" class="form-input" />
+                      <input
+                        :ref="el => fieldRefs.discount = el"
+                        v-model.number="form.discount"
+                        @input="clearError('discount')"
+                        type="number" min="0" step="0.01"
+                        class="form-input"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.discount }"
+                      />
+                      <p v-if="fieldErrors.discount" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.discount }}
+                      </p>
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-primary-600">{{ $t("admin.sellingPrice") }} *</label>
-                      <input v-model.number="form.price" type="number" min="0" step="0.01" required class="form-input" />
+                      <input
+                        :ref="el => fieldRefs.price = el"
+                        v-model.number="form.price"
+                        @input="clearError('price')"
+                        type="number" min="0" step="0.01"
+                        class="form-input"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.price }"
+                      />
+                      <p v-if="fieldErrors.price" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.price }}
+                      </p>
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider text-emerald-600">{{ $t("admin.netProfit") }}</label>
@@ -415,7 +463,17 @@
                   <div class="grid gap-4 md:grid-cols-2">
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.descEn") }}</label>
-                      <textarea v-model="form.description" rows="3" class="form-input resize-none"></textarea>
+                      <textarea
+                        :ref="el => fieldRefs.description = el"
+                        v-model="form.description"
+                        @input="clearError('description')"
+                        rows="3"
+                        class="form-input resize-none"
+                        :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.description }"
+                      ></textarea>
+                      <p v-if="fieldErrors.description" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                        <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.description }}
+                      </p>
                     </div>
                     <div>
                       <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ $t("admin.descAr") }}</label>
@@ -423,7 +481,11 @@
                     </div>
                   </div>
 
-                  <section class="space-y-4 rounded-3xl border border-borderThin bg-background p-5">
+                  <section
+                    :ref="el => fieldRefs.size_section = el"
+                    class="space-y-4 rounded-3xl border border-borderThin bg-background p-5"
+                    :class="{ 'border-red-400': fieldErrors.size_options }"
+                  >
                     <div>
                       <h4 class="text-sm font-black uppercase tracking-widest text-textPrimary">Size Mode</h4>
                       <p class="text-xs text-textSecondary">{{ uiText.sizeModeHint }}</p>
@@ -463,6 +525,10 @@
                         </button>
                       </div>
                     </div>
+                    <!-- Inline error message for size options -->
+                    <p v-if="fieldErrors.size_options" class="flex items-center gap-1 text-[11px] font-bold text-red-500">
+                      <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.size_options }}
+                    </p>
                   </section>
 
                   <section class="space-y-4 rounded-3xl border border-borderThin bg-background p-5">
@@ -482,15 +548,44 @@
                     </div>
 
                     <div v-else class="space-y-5">
-                      <div v-for="(color, index) in form.colors" :key="color.client_key" class="space-y-4 rounded-3xl border border-borderThin bg-surface p-4">
+                      <div
+                        v-for="(color, index) in form.colors"
+                        :key="color.client_key"
+                        :ref="el => colorSectionRefs[color.client_key] = el"
+                        class="space-y-4 rounded-3xl bg-surface p-4"
+                        :class="[
+                          'border rounded-3xl',
+                          fieldErrors.colors[color.client_key] ? 'border-red-400' : 'border-borderThin'
+                        ]"
+                      >
                         <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_160px_84px_96px]">
                           <div>
                             <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ uiText.colorName }}</label>
-                            <input v-model="color.name" class="form-input" :placeholder="uiText.colorNamePlaceholder" />
+                            <input
+                              :ref="el => colorNameRefs[color.client_key] = el"
+                              v-model="color.name"
+                              @input="clearColorError(color.client_key, 'name')"
+                              class="form-input"
+                              :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.colors[color.client_key]?.name }"
+                              :placeholder="uiText.colorNamePlaceholder"
+                            />
+                            <p v-if="fieldErrors.colors[color.client_key]?.name" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                              <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.colors[color.client_key].name }}
+                            </p>
                           </div>
                           <div>
                             <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ uiText.colorHex }}</label>
-                            <input v-model="color.value" class="form-input font-mono uppercase" placeholder="#C8A96B" />
+                            <input
+                              :ref="el => colorHexRefs[color.client_key] = el"
+                              v-model="color.value"
+                              @input="clearColorError(color.client_key, 'hex')"
+                              class="form-input font-mono uppercase"
+                              :class="{ 'border-red-500 ring-2 ring-red-500/20': fieldErrors.colors[color.client_key]?.hex }"
+                              placeholder="#C8A96B"
+                            />
+                            <p v-if="fieldErrors.colors[color.client_key]?.hex" class="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-500">
+                              <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.colors[color.client_key].hex }}
+                            </p>
                           </div>
                           <div>
                             <label class="form-label mb-1.5 text-xs uppercase tracking-wider opacity-70">{{ uiText.picker }}</label>
@@ -511,8 +606,12 @@
                         <ImageUploader
                           :key="`color-${color.client_key}-${uploaderSeed}`"
                           :existing-images="color.existingImages"
-                          @update:images="(files) => onColorImagesUpdate(color.client_key, files)"
+                          @update:images="(files) => { onColorImagesUpdate(color.client_key, files); clearColorError(color.client_key, 'images'); }"
                         />
+                        <!-- Inline error for color image -->
+                        <p v-if="fieldErrors.colors[color.client_key]?.images" class="flex items-center gap-1 text-[11px] font-bold text-red-500">
+                          <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.colors[color.client_key].images }}
+                        </p>
                       </div>
                     </div>
                   </section>
@@ -570,7 +669,11 @@
                     </div>
                   </section>
 
-                  <section v-if="!form.colors.length" class="space-y-3">
+                  <section
+                    v-if="!form.colors.length"
+                    :ref="el => fieldRefs.general_images_section = el"
+                    class="space-y-3"
+                  >
                     <div class="flex items-center justify-between">
                       <label class="form-label mb-0 text-xs uppercase tracking-wider opacity-70">{{ uiText.generalProductImages }}</label>
                       <span class="text-[9px] font-black uppercase tracking-tighter text-textSecondary opacity-50">
@@ -580,13 +683,14 @@
                     <ImageUploader
                       :key="`general-${uploaderSeed}`"
                       :existing-images="form.existingImages"
-                      @update:images="onImagesUpdate"
+                      @update:images="(files) => { onImagesUpdate(files); clearError('general_images'); }"
                     />
+                    <!-- Inline error for general product images -->
+                    <p v-if="fieldErrors.general_images" class="flex items-center gap-1 text-[11px] font-bold text-red-500">
+                      <AlertCircle class="h-3 w-3 flex-shrink-0" />{{ fieldErrors.general_images }}
+                    </p>
                   </section>
 
-                  <div v-if="formError" class="rounded-xl border border-red-100 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10">
-                    <p class="text-center text-xs font-bold uppercase text-red-600">{{ formError }}</p>
-                  </div>
                 </template>
               </div>
 
@@ -608,8 +712,8 @@
 </template>
 
 <script setup>
-import { computed, inject, onMounted, reactive, ref, watch } from "vue";
-import { Edit2, PackageOpen, Palette, Plus, Search, Trash2, X } from "lucide-vue-next";
+import { computed, inject, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { Edit2, AlertCircle, PackageOpen, Palette, Plus, Search, Trash2, X } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
@@ -636,8 +740,49 @@ const formModal = ref(false);
 const formLoading = ref(false);
 const editingProduct = ref(null);
 const saving = ref(false);
-const formError = ref("");
 const uploaderSeed = ref(0);
+
+// ── Field-level validation state ──────────────────────────────────────────────
+// Each key maps to its inline error message (empty string = no error).
+// This replaces the single formError string that showed at the bottom of the form.
+const fieldErrors = reactive({
+  name: "",
+  category_id: "",
+  original_price: "",
+  price: "",
+  discount: "",
+  description: "",
+  size_options: "",
+  general_images: "",
+  // color errors are keyed by client_key: e.g. { "color-xxx": { name, hex, images } }
+  colors: {},
+});
+
+// Template refs for auto-focus on validation failure
+const fieldRefs = reactive({
+  name: null,
+  category_id: null,
+  original_price: null,
+  price: null,
+  discount: null,
+  description: null,
+  size_section: null,
+  general_images_section: null,
+  // color refs are populated dynamically: colorNameRefs[clientKey], colorHexRefs[clientKey]
+});
+const colorNameRefs = reactive({});
+const colorHexRefs  = reactive({});
+const colorSectionRefs = reactive({});
+
+function clearError(field) {
+  if (field in fieldErrors) fieldErrors[field] = "";
+}
+
+function clearColorError(clientKey, subField) {
+  if (fieldErrors.colors[clientKey]) {
+    fieldErrors.colors[clientKey][subField] = "";
+  }
+}
 
 function createDefaultForm() {
   return {
@@ -876,12 +1021,13 @@ function debouncedFetch() {
 function resetForm() {
   Object.assign(form, createDefaultForm());
   uploaderSeed.value += 1;
-  formError.value = "";
+  // Reset all inline field errors when the form is reset
+  Object.assign(fieldErrors, { name: "", category_id: "", original_price: "", price: "", discount: "", description: "", size_options: "", general_images: "", colors: {} });
 }
 
 function closeForm() {
   formModal.value = false;
-  formError.value = "";
+  Object.assign(fieldErrors, { name: "", category_id: "", original_price: "", price: "", discount: "", description: "", size_options: "", general_images: "", colors: {} });
 }
 
 function closeDetails() {
@@ -1068,43 +1214,161 @@ function getPreparedColors() {
     .filter((color) => color.name && color.value);
 }
 
+/**
+ * Validates all form fields and populates `fieldErrors` with localized messages.
+ * Returns true if the form is valid, false otherwise.
+ * After setting errors, calls `focusFirstError()` to scroll and focus the offending field.
+ */
 function validateForm() {
-  if (!form.name || !form.category_id || !form.original_price || !form.price || !form.description) {
-    return "Please fill in the required product fields.";
-  }
-  if (Number(form.original_price) < 0) return "Original price must be zero or greater.";
-  if (Number(form.price) < 0) return "Selling price must be zero or greater.";
-  if (form.discount !== "" && Number(form.discount) < 0) return "Discount must be zero or greater.";
-  if (form.size_mode !== "none" && form.size_options.length === 0) return "Please choose at least one size option.";
+  // Reset all errors before re-validating
+  Object.assign(fieldErrors, { name: "", category_id: "", original_price: "", price: "", discount: "", description: "", size_options: "", general_images: "", colors: {} });
 
-  const preparedColors = getPreparedColors();
-  if (preparedColors.length !== form.colors.length) return "Each color must have a name and a valid hex value.";
+  let hasError = false;
 
-  for (const color of preparedColors) {
-    if (!/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color.value)) return `Color "${color.name}" must use a valid hex color.`;
-    const uploadedCount = (color.newImages || []).filter(Boolean).length;
-    const existingCount = Array.isArray(color.existingImages) ? color.existingImages.length : 0;
-    if (uploadedCount > 5) return `Color "${color.name}" cannot have more than 5 images.`;
-    if (!editingProduct.value && uploadedCount === 0) return `Please upload at least one image for "${color.name}".`;
-    if (editingProduct.value && uploadedCount === 0 && existingCount === 0) return `Color "${color.name}" must keep at least one image.`;
+  // ── Required text fields ───────────────────────────────────────────────────
+  if (!form.name || !String(form.name).trim()) {
+    fieldErrors.name = t('validation.required');
+    hasError = true;
   }
 
-  const generalImagesCount = (form.images || []).filter(Boolean).length + (form.existingImages || []).length;
-  if (!preparedColors.length && generalImagesCount === 0) return "Please upload at least one general product image.";
+  if (!form.category_id) {
+    fieldErrors.category_id = t('validation.categoryRequired');
+    hasError = true;
+  }
 
-  if (hasVariants.value) {
-    for (const combo of variantCombos.value) {
-      const stockValue = form.variantStocks[getVariantKey(combo.color_key, combo.size_value)];
-      if (stockValue === undefined || Number(stockValue) < 0) return "Every variant combination must have a valid stock value.";
+  // ── Pricing fields ────────────────────────────────────────────────────────
+  const origPrice = Number(form.original_price);
+  if (form.original_price === '' || form.original_price === null || form.original_price === undefined || Number.isNaN(origPrice) || origPrice < 0) {
+    fieldErrors.original_price = t('validation.invalidPrice');
+    hasError = true;
+  }
+
+  const sellPrice = Number(form.price);
+  if (form.price === '' || form.price === null || form.price === undefined || Number.isNaN(sellPrice) || sellPrice < 0) {
+    fieldErrors.price = t('validation.invalidPrice');
+    hasError = true;
+  }
+
+  if (form.discount !== '' && form.discount !== null && form.discount !== undefined) {
+    const disc = Number(form.discount);
+    if (Number.isNaN(disc) || disc < 0) {
+      fieldErrors.discount = t('validation.invalidDiscount');
+      hasError = true;
     }
   }
 
-  return "";
+  // ── Description ────────────────────────────────────────────────────────────
+  if (!form.description || !String(form.description).trim()) {
+    fieldErrors.description = t('validation.descriptionRequired');
+    hasError = true;
+  }
+
+  // ── Size options ──────────────────────────────────────────────────────────
+  if (form.size_mode !== 'none' && form.size_options.length === 0) {
+    fieldErrors.size_options = t('validation.sizeRequired');
+    hasError = true;
+  }
+
+  // ── Colors validation ────────────────────────────────────────────────────
+  const preparedColors = getPreparedColors();
+
+  for (const color of form.colors) {
+    const colorErrors = { name: '', hex: '', images: '' };
+    let colorHasError = false;
+
+    if (!String(color.name || '').trim()) {
+      colorErrors.name = t('validation.colorNameRequired');
+      colorHasError = true;
+      hasError = true;
+    }
+
+    const hexValid = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(String(color.value || '').trim());
+    if (!hexValid) {
+      colorErrors.hex = t('validation.colorHexRequired');
+      colorHasError = true;
+      hasError = true;
+    }
+
+    const uploadedCount = (color.newImages || []).filter(Boolean).length;
+    const existingCount = Array.isArray(color.existingImages) ? color.existingImages.length : 0;
+    if (!editingProduct.value && uploadedCount === 0) {
+      colorErrors.images = t('validation.colorImageRequired');
+      colorHasError = true;
+      hasError = true;
+    } else if (editingProduct.value && uploadedCount === 0 && existingCount === 0) {
+      colorErrors.images = t('validation.colorImageRequired');
+      colorHasError = true;
+      hasError = true;
+    }
+
+    if (colorHasError) {
+      fieldErrors.colors[color.client_key] = colorErrors;
+    }
+  }
+
+  // ── General images (no colors) ─────────────────────────────────────────
+  const generalImagesCount = (form.images || []).filter(Boolean).length + (form.existingImages || []).length;
+  if (!form.colors.length && generalImagesCount === 0) {
+    fieldErrors.general_images = t('validation.generalImageRequired');
+    hasError = true;
+  }
+
+  return !hasError;
+}
+
+/**
+ * Finds the first field with an error and scrolls + focuses it.
+ * Priority order matches the visual top-to-bottom layout of the form.
+ */
+async function focusFirstError() {
+  await nextTick();
+
+  // Helper: scroll element into view and focus it
+  const focusEl = (el) => {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof el.focus === 'function') el.focus();
+    return true;
+  };
+
+  // Check top-level fields in form order
+  if (fieldErrors.name        && focusEl(fieldRefs.name))        return;
+  if (fieldErrors.category_id && focusEl(fieldRefs.category_id)) return;
+  if (fieldErrors.original_price && focusEl(fieldRefs.original_price)) return;
+  if (fieldErrors.price       && focusEl(fieldRefs.price))       return;
+  if (fieldErrors.discount    && focusEl(fieldRefs.discount))    return;
+  if (fieldErrors.description && focusEl(fieldRefs.description)) return;
+
+  // Size section — scroll to the section header
+  if (fieldErrors.size_options && fieldRefs.size_section) {
+    fieldRefs.size_section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Color errors — find the first color with an error
+  for (const color of form.colors) {
+    const colorErr = fieldErrors.colors[color.client_key];
+    if (!colorErr) continue;
+    if (colorErr.name && focusEl(colorNameRefs[color.client_key])) return;
+    if (colorErr.hex  && focusEl(colorHexRefs[color.client_key]))  return;
+    if (colorErr.images && colorSectionRefs[color.client_key]) {
+      colorSectionRefs[color.client_key].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+
+  // General images section
+  if (fieldErrors.general_images && fieldRefs.general_images_section) {
+    fieldRefs.general_images_section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 async function saveProduct() {
-  formError.value = validateForm();
-  if (formError.value) return;
+  const isValid = validateForm();
+  if (!isValid) {
+    focusFirstError();
+    return;
+  }
 
   saving.value = true;
   try {
@@ -1164,7 +1428,8 @@ async function saveProduct() {
     );
     await fetchProducts(pagination.page);
   } catch (error) {
-    formError.value = error.response?.data?.message || t("admin.saveError");
+    // Show server-side errors as a toast since they aren't field-specific
+    showToast?.(error.response?.data?.message || t("admin.saveError"), "error");
   } finally {
     saving.value = false;
   }

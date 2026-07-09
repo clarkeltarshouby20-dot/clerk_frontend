@@ -808,4 +808,20 @@ export default {
     retryBtn: "Try Again",
     statusCode: "Status",
   },
+
+  // ── Form Validation Messages ───────────────────────────────────────────
+  // Used for inline field-level errors in forms (e.g. product form)
+  validation: {
+    required: "This field is required.",
+    invalidPrice: "Please enter a valid price (0 or more).",
+    invalidDiscount: "Discount must be 0 or more.",
+    invalidHex: "Please enter a valid hex color (e.g. #C8A96B).",
+    sizeRequired: "Please select at least one size option.",
+    colorNameRequired: "Color name is required.",
+    colorHexRequired: "A valid hex color code is required.",
+    colorImageRequired: "Please upload at least one image for this color.",
+    generalImageRequired: "Please upload at least one product image.",
+    categoryRequired: "Please select a category.",
+    descriptionRequired: "A product description is required.",
+  },
 };

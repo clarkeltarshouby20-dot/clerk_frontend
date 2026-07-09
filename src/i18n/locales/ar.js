@@ -789,12 +789,28 @@ export default {
     },
   },
 
-  // ── Error / Maintenance ───────────────────────────────────
+  // ── Error / Maintenance ──────────────────────────────────────────────────────
   error: {
     maintenanceTitle: "سنعود قريباً!",
     maintenanceDesc:
       "الخادم يأخذ استراحة قصيرة. يرجى المحاولة مجدداً بعد دقائق قليلة.",
     retryBtn: "حاول مرة أخرى",
     statusCode: "رمز الخطأ",
+  },
+
+  // ── Form Validation Messages ───────────────────────────────────────────
+  // رسائل الخطأ التفصيلية لكل حقل في النموذج
+  validation: {
+    required: "هذا الحقل مطلوب.",
+    invalidPrice: "يرجى إدخال سعر صحيح (0 أو أكثر).",
+    invalidDiscount: "الخصم لازم يكون 0 أو أكثر.",
+    invalidHex: "يرجى إدخال كود لون HEX صحيح (مثال: #C8A96B).",
+    sizeRequired: "يرجى اختيار مقاس واحد على الأقل.",
+    colorNameRequired: "اسم اللون مطلوب.",
+    colorHexRequired: "كود لون HEX صحيح مطلوب.",
+    colorImageRequired: "يرجى رفع صورة واحدة على الأقل لهذا اللون.",
+    generalImageRequired: "يرجى رفع صورة واحدة على الأقل للمنتج.",
+    categoryRequired: "يرجى اختيار تصنيف.",
+    descriptionRequired: "وصف المنتج مطلوب.",
   },
 };
