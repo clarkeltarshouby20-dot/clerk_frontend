@@ -27,13 +27,9 @@
             {{ $t("home.newCollection") || "New Collection" }}
           </span>
           <h1
-            class="text-5xl md:text-6xl lg:text-[5rem] font-extrabold text-textPrimary leading-[1.18] md:leading-[1.16] lg:leading-[1.12] mb-6 tracking-tight"
+            class="text-5xl md:text-6xl lg:text-[5rem] font-extrabold leading-[1.18] md:leading-[1.16] lg:leading-[1.12] mb-6 tracking-tight"
           >
-            {{ $t("home.heroTitlePart1") }} <br />
-            <span
-              class="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-violet-500"
-              >{{ $t("home.heroTitlePart2") }}</span
-            >
+            <span class="text-primary-500">{{ $t("home.heroTitlePart2") }}</span>
           </h1>
           <p
             class="text-lg md:text-xl text-textSecondary max-w-lg mb-10 font-medium leading-relaxed"
