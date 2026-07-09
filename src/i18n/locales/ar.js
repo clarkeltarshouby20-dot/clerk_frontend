@@ -403,6 +403,7 @@ export default {
     categoryDiscount: {
       title: "خصم على جميع منتجات القسم",
       apply: "تطبيق الخصم",
+      remove: "إلغاء الخصم",
       hint: "يُطبَّق على سعر البيع الحالي. قيمة الخصم تُضاف لحقل «خصم» المنتج، وصافي الربح يُحدَّث تلقائياً.",
       typePercent: "نسبة %",
       typeFixed: "مبلغ ثابت",
@@ -410,6 +411,7 @@ export default {
       valuePlaceholderPercent: "مثال: 20",
       valuePlaceholderFixed: "مثال: 150",
       success: "تم تطبيق الخصم على {count} منتج",
+      removeSuccess: "تم إلغاء الخصم من {count} منتج",
       failed: "فشل تطبيق الخصم",
       invalidValue: "أدخل قيمة خصم صحيحة",
     },

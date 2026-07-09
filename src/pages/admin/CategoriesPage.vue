@@ -172,7 +172,6 @@
                     min="0.01"
                     :max="discountForm.type === 'percent' ? 100 : undefined"
                     step="0.01"
-                    required
                     class="form-input"
                     :placeholder="
                       discountForm.type === 'percent'
@@ -195,10 +194,21 @@
                 >
                   {{ $t("common.cancel") }}
                 </button>
+                <!-- Remove button — only shown when the category already has an active discount -->
+                <button
+                  v-if="discountCat && hasCategoryDiscount(discountCat)"
+                  type="button"
+                  class="btn-danger min-w-[120px] w-full sm:w-auto"
+                  :disabled="discountRemoving || discountSaving"
+                  @click="removeDiscount"
+                >
+                  <LoadingSpinner v-if="discountRemoving" :size="18" />
+                  {{ $t("admin.categoryDiscount.remove") }}
+                </button>
                 <button
                   type="submit"
                   class="btn-primary min-w-[120px] w-full sm:w-auto"
-                  :disabled="discountSaving"
+                  :disabled="discountSaving || discountRemoving"
                 >
                   <LoadingSpinner v-if="discountSaving" :size="18" />
                   {{ $t("admin.categoryDiscount.apply") }}
@@ -348,6 +358,7 @@ const catToDelete = ref(null);
 const discountModal = ref(false);
 const discountCat = ref(null);
 const discountSaving = ref(false);
+const discountRemoving = ref(false);
 const discountError = ref("");
 const discountForm = reactive({
   type: "percent",
@@ -468,6 +479,37 @@ async function applyDiscount() {
       e.response?.data?.message || t("admin.categoryDiscount.failed");
   } finally {
     discountSaving.value = false;
+  }
+}
+
+/**
+ * Sends a request to clear the active discount for the current category.
+ * Sets discount_type to 'none', which the backend uses to restore all
+ * products in the category to their original (pre-discount) selling prices.
+ */
+async function removeDiscount() {
+  if (!discountCat.value) return;
+
+  discountRemoving.value = true;
+  discountError.value = "";
+  try {
+    const { data } = await api.post(
+      `/categories/${discountCat.value.id}/apply-discount`,
+      { discount_type: "none", discount_value: 0 },
+    );
+    discountModal.value = false;
+    await fetchCategories();
+    showToast?.(
+      t("admin.categoryDiscount.removeSuccess", {
+        count: data.data?.updated_count || 0,
+      }),
+      "success",
+    );
+  } catch (e) {
+    discountError.value =
+      e.response?.data?.message || t("admin.categoryDiscount.failed");
+  } finally {
+    discountRemoving.value = false;
   }
 }
 

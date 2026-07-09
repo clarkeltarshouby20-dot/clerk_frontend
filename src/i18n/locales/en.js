@@ -402,6 +402,7 @@ export default {
     categoryDiscount: {
       title: "Discount all products in category",
       apply: "Apply discount",
+      remove: "Remove discount",
       hint: "Applies to the current selling price. The discount amount is added to each product's discount field and net profit is recalculated automatically.",
       typePercent: "Percentage %",
       typeFixed: "Fixed amount",
@@ -409,6 +410,7 @@ export default {
       valuePlaceholderPercent: "e.g. 20",
       valuePlaceholderFixed: "e.g. 150",
       success: "Discount applied to {count} product(s)",
+      removeSuccess: "Discount removed from {count} product(s)",
       failed: "Failed to apply discount",
       invalidValue: "Enter a valid discount value",
     },
