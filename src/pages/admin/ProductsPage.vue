@@ -607,6 +607,7 @@
                           :key="`color-${color.client_key}-${uploaderSeed}`"
                           :existing-images="color.existingImages"
                           @update:images="(files) => { onColorImagesUpdate(color.client_key, files); clearColorError(color.client_key, 'images'); }"
+                          @update:existing-images="(imgs) => color.existingImages = imgs"
                         />
                         <!-- Inline error for color image -->
                         <p v-if="fieldErrors.colors[color.client_key]?.images" class="flex items-center gap-1 text-[11px] font-bold text-red-500">
@@ -684,6 +685,7 @@
                       :key="`general-${uploaderSeed}`"
                       :existing-images="form.existingImages"
                       @update:images="(files) => { onImagesUpdate(files); clearError('general_images'); }"
+                      @update:existing-images="(imgs) => form.existingImages = imgs"
                     />
                     <!-- Inline error for general product images -->
                     <p v-if="fieldErrors.general_images" class="flex items-center gap-1 text-[11px] font-bold text-red-500">
@@ -1396,14 +1398,16 @@ async function saveProduct() {
     payload.append("size_options", JSON.stringify(form.size_options));
     payload.append(
       "colors",
-      JSON.stringify(preparedColors.map(({ id, client_key, name, value, sort_order }) => ({
+      JSON.stringify(preparedColors.map(({ id, client_key, name, value, sort_order, existingImages }) => ({
         id,
         client_key,
         name,
         value,
         sort_order,
+        existing_images: existingImages, // send kept server-side images for this color
       }))),
     );
+    payload.append("existing_images", JSON.stringify(form.existingImages)); // send kept server-side general images
     payload.append("variant_stock", JSON.stringify(variantStock));
 
     (form.images || []).filter(Boolean).forEach((file) => payload.append("images", file));

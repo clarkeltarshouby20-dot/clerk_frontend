@@ -190,6 +190,7 @@ function handleFile(index, event) {
 }
 
 function removeImage(index) {
+  const removedPreview = previews.value[index];
   files.value[index] = null;
   
   if (previews.value[index] && typeof previews.value[index] === 'string' && previews.value[index].startsWith('blob:')) {
@@ -199,6 +200,14 @@ function removeImage(index) {
   
   previews.value[index] = null;
   if (inputs.value[index]) inputs.value[index].value = '';
+
+  // If the removed image was an existing server image, update existingImages
+  if (removedPreview && typeof removedPreview === 'string' && !removedPreview.startsWith('blob:')) {
+    const updatedExisting = props.existingImages.filter(img => img !== removedPreview);
+    emit('update:existing-images', updatedExisting);
+    emit('update:existingImages', updatedExisting);
+  }
+
   updateParent();
 }
 
