@@ -1259,11 +1259,7 @@ function validateForm() {
     }
   }
 
-  // ── Description ────────────────────────────────────────────────────────────
-  if (!form.description || !String(form.description).trim()) {
-    fieldErrors.description = t('validation.descriptionRequired');
-    hasError = true;
-  }
+
 
   // ── Size options ──────────────────────────────────────────────────────────
   if (form.size_mode !== 'none' && form.size_options.length === 0) {
