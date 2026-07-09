@@ -493,6 +493,7 @@ export default {
     selectCategory: "Select Category...",
     imageRequirements: "JPG, PNG or WebP — max 5 MB each",
     imageRequirements2MB: "JPG, PNG or WebP — max 2 MB",
+    imageRequirements5MB: "JPG, PNG or WebP — max 5 MB",
     saveError: "Error saving product. Please check the form.",
     currentPrice: "Current Price",
     originalPrice: "Original Price",

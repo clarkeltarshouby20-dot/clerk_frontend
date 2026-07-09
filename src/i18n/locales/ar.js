@@ -488,6 +488,7 @@ export default {
     selectCategory: "اختر التصنيف...",
     imageRequirements: "JPG، PNG أو WebP - بحد أقصى 5 ميجابايت لكل منها",
     imageRequirements2MB: "JPG، PNG أو WebP - بحد أقصى 2 ميجابايت",
+    imageRequirements5MB: "JPG، PNG أو WebP - بحد أقصى 5 ميجابايت",
     saveError: "خطأ أثناء حفظ المنتج. يرجى مراجعة البيانات.",
     currentPrice: "السعر الحالي",
     originalPrice: "السعر الأصلي",

@@ -93,9 +93,20 @@ const props = defineProps({
   },
   maxSize: {
     type: Number,
-    default: 2 * 1024 * 1024 // 2MB default for products
+    default: 5 * 1024 * 1024 // 5MB default for products
   }
 });
+
+// Allowed MIME types must match the server-side upload middleware (upload.js)
+// Accepting any image/* here would cause files like HEIC/TIFF to pass frontend
+// validation but get rejected by the backend — causing confusing inconsistency.
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+
+function getFileExtension(filename) {
+  const lastDot = filename.lastIndexOf('.');
+  return lastDot !== -1 ? filename.slice(lastDot).toLowerCase() : '';
+}
 
 const emit = defineEmits(['update:images']);
 const { t } = useI18n();
@@ -143,11 +154,19 @@ function handleFile(index, event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Validation
-  if (!file.type.startsWith('image/')) {
-    setError(t('errors.invalidFileType') || "يرجى اختيار ملف صورة صحيح.");
+  // Validate MIME type against the exact list accepted by the backend (upload.js).
+  // Using startsWith('image/') would accept HEIC, TIFF, GIF etc. that the server rejects,
+  // causing a confusing "works sometimes" experience for the user.
+  const ext = getFileExtension(file.name);
+  const isMimeAllowed = ALLOWED_MIME_TYPES.has(file.type.toLowerCase());
+  const isExtAllowed  = ALLOWED_EXTENSIONS.has(ext);
+
+  if (!isMimeAllowed && !isExtAllowed) {
+    setError(t('errors.invalidFileType') || 'يرجى اختيار صورة بصيغة JPEG أو PNG أو WEBP فقط.');
     return;
   }
+
+  // Size guard — must stay in sync with multer limits in upload.js
   if (file.size > props.maxSize) {
     const mb = (props.maxSize / (1024 * 1024)).toFixed(0);
     setError(t('profile.errors.fileTooLarge') || `حجم الصورة يتجاوز الحد المسموح به (${mb} ميجابايت).`);

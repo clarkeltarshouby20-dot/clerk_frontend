@@ -574,7 +574,7 @@
                     <div class="flex items-center justify-between">
                       <label class="form-label mb-0 text-xs uppercase tracking-wider opacity-70">{{ uiText.generalProductImages }}</label>
                       <span class="text-[9px] font-black uppercase tracking-tighter text-textSecondary opacity-50">
-                        {{ $t("admin.imageRequirements2MB") }}
+                        {{ $t("admin.imageRequirements5MB") }}
                       </span>
                     </div>
                     <ImageUploader
