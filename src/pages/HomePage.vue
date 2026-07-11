@@ -78,9 +78,10 @@
       </div>
     </section>
 
-    <!-- ── Categories ─────────────────────────────────────── -->
+    <!-- ── Categories Slider ─────────────────────────────── -->
     <section class="py-24 md:py-32 bg-background">
       <div class="section-container">
+        <!-- Header -->
         <div
           class="flex flex-col md:flex-row items-center justify-between mb-12 sm:mb-16 gap-6"
           v-animate="{ delay: 0 }"
@@ -88,69 +89,117 @@
           <h2 class="section-title mb-0">
             {{ $t("home.categories") }}
           </h2>
-          <RouterLink
-            to="/products"
-            class="group flex items-center gap-2 font-bold text-sm tracking-wide uppercase text-textSecondary hover:text-primary-500 transition-colors"
-          >
-            {{ $t("common.viewAll") }}
-            <span
-              class="w-8 h-[2px] bg-textSecondary group-hover:bg-primary-500 transition-colors"
-            ></span>
-          </RouterLink>
+          <div class="flex items-center gap-4">
+            <!-- Arrow navigation buttons (hidden on mobile) -->
+            <div class="hidden md:flex items-center gap-3" dir="ltr">
+              <!-- Prev: always decrements catIndex and shows left arrow (‹) -->
+              <button
+                @click="catPrev"
+                :disabled="catIndex === 0"
+                class="cat-arrow-btn"
+                :class="{ 'opacity-30 cursor-not-allowed': catIndex === 0 }"
+                aria-label="Previous categories"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <!-- Next: always increments catIndex and shows right arrow (›) -->
+              <button
+                @click="catNext"
+                :disabled="catIndex >= catMaxIndex"
+                class="cat-arrow-btn"
+                :class="{ 'opacity-30 cursor-not-allowed': catIndex >= catMaxIndex }"
+                aria-label="Next categories"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+            <RouterLink
+              to="/products"
+              class="group flex items-center gap-2 font-bold text-sm tracking-wide uppercase text-textSecondary hover:text-primary-500 transition-colors"
+            >
+              {{ $t("common.viewAll") }}
+              <span class="w-8 h-[2px] bg-textSecondary group-hover:bg-primary-500 transition-colors"></span>
+            </RouterLink>
+          </div>
         </div>
 
-        <div
-          v-if="!loadingCats"
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8"
-        >
-          <RouterLink
-            v-for="(cat, index) in categories.slice(0, 3)"
-            :key="cat.id"
-            :to="`/products?category_id=${cat.id}`"
-            class="group relative overflow-hidden rounded-3xl aspect-[4/5] sm:aspect-square md:aspect-[4/5] flex items-end transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg border border-borderThin"
-            v-animate="{ delay: index * 100 }"
-            @click="trackCategoryVisit(cat.id)"
-          >
-            <img
-              :src="
-                optimizeImg(cat.image_url, 600, 75) ||
-                `https://placehold.co/600x600/f1f5f9/94a3b8?text=${cat.name.charAt(0)}`
-              "
-              :alt="cat.name"
-              width="600"
-              height="750"
-              class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-              loading="lazy"
-              decoding="async"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-            ></div>
-            <div class="relative z-10 p-8 w-full flex flex-col justify-end">
-              <h3
-                class="font-extrabold text-3xl md:text-4xl text-white mb-2 leading-tight drop-shadow-md"
-              >
-                {{ ui.locale === "ar" && cat.name_ar ? cat.name_ar : cat.name }}
-              </h3>
-              <div>
-                <span
-                  class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-white/90 group-hover:text-primary-400 transition-colors duration-300"
-                >
-                  {{ $t("home.shopNow") }}
-                  <span
-                    class="w-6 h-[2px] bg-white group-hover:bg-primary-400 transition-colors"
-                  ></span>
-                </span>
-              </div>
-            </div>
-          </RouterLink>
+        <!-- Skeleton Loading -->
+        <div v-if="loadingCats" class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div v-for="i in 3" :key="i" class="aspect-[4/5] bg-surface animate-pulse rounded-3xl"></div>
         </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+
+        <!--
+          Slider Track wrapper:
+          IMPORTANT: dir="ltr" is forced here so that:
+          1. The flex container always orders items left-to-right (item[0] on left)
+          2. translateX(-offset) always scrolls correctly regardless of page RTL
+          Without this, dir="rtl" from the page would flip flex direction and
+          break the translateX offset calculation, causing empty space.
+        -->
+        <div
+          v-else
+          class="relative overflow-hidden"
+          dir="ltr"
+          ref="catSliderRef"
+          @touchstart.passive="onCatTouchStart"
+          @touchend.passive="onCatTouchEnd"
+        >
           <div
-            v-for="i in 3"
-            :key="i"
-            class="aspect-[4/5] bg-surface animate-pulse rounded-3xl"
-          ></div>
+            class="flex gap-6 sm:gap-8 transition-transform duration-500 ease-in-out"
+            :style="catTrackStyle"
+          >
+            <RouterLink
+              v-for="(cat, index) in categories"
+              :key="cat.id"
+              :to="`/products?category_id=${cat.id}`"
+              class="group relative overflow-hidden rounded-3xl flex-shrink-0 flex items-end transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg border border-borderThin"
+              :style="{ width: catCardWidth, aspectRatio: '4/5' }"
+              v-animate="{ delay: index * 80 }"
+              @click="trackCategoryVisit(cat.id)"
+            >
+              <img
+                :src="optimizeImg(cat.image_url, 600, 75) || `https://placehold.co/600x600/f1f5f9/94a3b8?text=${cat.name.charAt(0)}`"
+                :alt="cat.name"
+                width="600"
+                height="750"
+                class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div class="relative z-10 p-8 w-full flex flex-col justify-end">
+                <h3 class="font-extrabold text-3xl md:text-4xl text-white mb-2 leading-tight drop-shadow-md">
+                  {{ ui.locale === "ar" && cat.name_ar ? cat.name_ar : cat.name }}
+                </h3>
+                <div>
+                  <span class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-white/90 group-hover:text-primary-400 transition-colors duration-300">
+                    {{ $t("home.shopNow") }}
+                    <span class="w-6 h-[2px] bg-white group-hover:bg-primary-400 transition-colors"></span>
+                  </span>
+                </div>
+              </div>
+            </RouterLink>
+          </div>
+        </div>
+
+        <!-- Dot Indicators -->
+        <div v-if="!loadingCats && categories.length > catPerPage" class="flex justify-center gap-2 mt-8">
+          <button
+            v-for="dot in catTotalPages"
+            :key="dot"
+            @click="catIndex = dot - 1"
+            class="transition-all duration-300 rounded-full"
+            :class="catIndex === dot - 1 ? 'w-8 h-2 bg-primary-500' : 'w-2 h-2 bg-borderThin hover:bg-primary-400'"
+            :aria-label="`Go to slide ${dot}`"
+          ></button>
         </div>
       </div>
     </section>
@@ -276,7 +325,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed } from "vue";
+import { ref, onMounted, onUnmounted, nextTick, inject, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import ProductCard from "@/components/ProductCard.vue";
 import { useUiStore } from "@/stores/ui.js";
@@ -303,7 +352,86 @@ const loadingCats = ref(true);
 const loadingProds = ref(true);
 const loadingMostVisited = ref(true);
 
+// ── Category Slider State ────────────────────────────────────────
+const catSliderRef = ref(null);
+const catIndex = ref(0);      // current "page" index
+const windowWidth = ref(window.innerWidth);
+
+/** How many cards are visible at once based on screen width */
+const catPerPage = computed(() => {
+  if (windowWidth.value >= 1024) return 3; // lg: 3 visible
+  if (windowWidth.value >= 640)  return 2; // sm/md: 2 visible
+  return 1;                                 // mobile: 1 visible
+});
+
+/** Total number of "pages" in the slider */
+const catTotalPages = computed(() =>
+  Math.max(1, Math.ceil(categories.value.length / catPerPage.value))
+);
+
+/** Maximum page index the user can navigate to */
+const catMaxIndex = computed(() => catTotalPages.value - 1);
+
+/**
+ * Calculates the pixel width of a single card based on the container size.
+ * This is bound as inline :style on each .cat-slide to ensure
+ * the flex children have explicit widths (CSS calc(100%) is unreliable in
+ * an unconstrained flex container).
+ */
+const catCardWidth = computed(() => {
+  if (!catSliderRef.value) return 'auto';
+  const container = catSliderRef.value.offsetWidth;
+  const gap       = windowWidth.value >= 640 ? 32 : 24;
+  const perPage   = catPerPage.value;
+  const width     = (container - gap * (perPage - 1)) / perPage;
+  return width > 0 ? `${width}px` : 'auto';
+});
+
+/**
+ * Calculates the translateX offset for the slider track.
+ * Uses the same card width formula so both are always in sync.
+ */
+const catTrackStyle = computed(() => {
+  if (!catSliderRef.value) return {};
+  const container = catSliderRef.value.offsetWidth;
+  const gap       = windowWidth.value >= 640 ? 32 : 24;
+  const perPage   = catPerPage.value;
+  const cardWidth = (container - gap * (perPage - 1)) / perPage;
+  const offset    = catIndex.value * (cardWidth + gap);
+  return { transform: `translateX(-${offset}px)` };
+});
+
+function catPrev() {
+  // Always decrement – the visual flip is handled in the template via flex-row-reverse
+  if (catIndex.value > 0) catIndex.value--;
+}
+function catNext() {
+  // Always increment – consistent with the disabled conditions
+  if (catIndex.value < catMaxIndex.value) catIndex.value++;
+}
+
+// Clamp catIndex when screen resizes to prevent out-of-bounds
+async function onResize() {
+  windowWidth.value = window.innerWidth;
+  // Wait for DOM reflow so offsetWidth is updated before recalculating
+  await nextTick();
+  if (catIndex.value > catMaxIndex.value) catIndex.value = catMaxIndex.value;
+}
+
+// ── Touch Swipe Support (mobile) ────────────────────────────────
+const touchStartX = ref(0);
+function onCatTouchStart(e) {
+  touchStartX.value = e.changedTouches[0].clientX;
+}
+function onCatTouchEnd(e) {
+  const delta = touchStartX.value - e.changedTouches[0].clientX;
+  if (delta > 50)  catNext();   // swipe left  → next
+  if (delta < -50) catPrev();   // swipe right → prev
+}
+
 onMounted(async () => {
+  window.addEventListener('resize', onResize, { passive: true });
+
   try {
     const { data } = await api.get("/categories");
     categories.value = (data.categories || data.data || []).filter(
@@ -313,6 +441,9 @@ onMounted(async () => {
     showToast?.(t("common.error"), "error");
   } finally {
     loadingCats.value = false;
+    // Wait for Vue to render the slider DOM before we measure offsetWidth
+    await nextTick();
+    windowWidth.value = window.innerWidth; // trigger computed recalculation
   }
 
   try {
@@ -336,6 +467,10 @@ onMounted(async () => {
   } finally {
     loadingMostVisited.value = false;
   }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize);
 });
 
 function categoryBg(cat) {
@@ -383,3 +518,41 @@ function optimizeImg(url, width = 800, quality = 75) {
   return url;
 }
 </script>
+
+<style scoped>
+/* ── Category Slider ─────────────────────────────────────────── */
+
+/**
+ * Arrow navigation buttons – circle shape with glassmorphism effect.
+ * Hidden on mobile via Tailwind 'hidden md:flex' in the template.
+ */
+.cat-arrow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border-thin, rgba(0,0,0,0.1));
+  background: var(--color-surface, #fff);
+  color: var(--color-text-primary, #1e293b);
+  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  flex-shrink: 0;
+}
+.dark .cat-arrow-btn {
+  background: var(--color-surface, #1e293b);
+  border-color: rgba(255,255,255,0.12);
+  color: #f1f5f9;
+}
+.cat-arrow-btn:not(:disabled):hover {
+  background: var(--color-primary-500, #6366f1);
+  color: #fff;
+  border-color: transparent;
+  transform: scale(1.08);
+  box-shadow: 0 4px 18px rgba(99,102,241,0.3);
+}
+
+
+/* Card width + aspect-ratio are set via inline :style from catCardWidth computed */
+</style>
