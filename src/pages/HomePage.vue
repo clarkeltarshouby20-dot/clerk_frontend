@@ -146,11 +146,9 @@
         -->
         <div
           v-else
-          class="relative overflow-hidden"
+          class="relative overflow-x-auto md:overflow-x-hidden no-scrollbar snap-x snap-mandatory py-2"
           dir="ltr"
           ref="catSliderRef"
-          @touchstart.passive="onCatTouchStart"
-          @touchend.passive="onCatTouchEnd"
         >
           <div
             class="flex gap-6 sm:gap-8 transition-transform duration-500 ease-in-out"
@@ -160,7 +158,7 @@
               v-for="(cat, index) in categories"
               :key="cat.id"
               :to="`/products?category_id=${cat.id}`"
-              class="group relative overflow-hidden rounded-3xl flex-shrink-0 flex items-end transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg border border-borderThin"
+              class="group relative overflow-hidden rounded-3xl flex-shrink-0 flex items-end transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl shadow-lg border border-borderThin snap-start"
               :style="{ width: catCardWidth, aspectRatio: '4/5' }"
               v-animate="{ delay: index * 80 }"
               @click="trackCategoryVisit(cat.id)"
@@ -190,8 +188,8 @@
           </div>
         </div>
 
-        <!-- Dot Indicators -->
-        <div v-if="!loadingCats && categories.length > catPerPage" class="flex justify-center gap-2 mt-8">
+        <!-- Dot Indicators (desktop/tablet only) -->
+        <div v-if="!loadingCats && categories.length > catPerPage" class="hidden md:flex justify-center gap-2 mt-8">
           <button
             v-for="dot in catTotalPages"
             :key="dot"
@@ -392,6 +390,7 @@ const catCardWidth = computed(() => {
  * Uses the same card width formula so both are always in sync.
  */
 const catTrackStyle = computed(() => {
+  if (windowWidth.value < 768) return { transform: 'none' }; // Disable transform on mobile to allow native finger drag
   if (!catSliderRef.value) return {};
   const container = catSliderRef.value.offsetWidth;
   const gap       = windowWidth.value >= 640 ? 32 : 24;
@@ -416,17 +415,6 @@ async function onResize() {
   // Wait for DOM reflow so offsetWidth is updated before recalculating
   await nextTick();
   if (catIndex.value > catMaxIndex.value) catIndex.value = catMaxIndex.value;
-}
-
-// ── Touch Swipe Support (mobile) ────────────────────────────────
-const touchStartX = ref(0);
-function onCatTouchStart(e) {
-  touchStartX.value = e.changedTouches[0].clientX;
-}
-function onCatTouchEnd(e) {
-  const delta = touchStartX.value - e.changedTouches[0].clientX;
-  if (delta > 50)  catNext();   // swipe left  → next
-  if (delta < -50) catPrev();   // swipe right → prev
 }
 
 onMounted(async () => {
@@ -555,4 +543,15 @@ function optimizeImg(url, width = 800, quality = 75) {
 
 
 /* Card width + aspect-ratio are set via inline :style from catCardWidth computed */
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
 </style>
