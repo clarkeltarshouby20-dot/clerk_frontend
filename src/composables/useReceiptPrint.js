@@ -81,7 +81,8 @@ export function buildReceiptPrintHtml(sale) {
   <style>
     @page {
       size: ${widthMm}mm auto;
-      margin: 0;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     * {
@@ -90,23 +91,32 @@ export function buildReceiptPrintHtml(sale) {
       padding: 0;
     }
 
-    html, body {
+    html {
+      margin: 0 !important;
+      padding: 0 !important;
       width: ${widthMm}mm;
-      margin: 0;
-      padding: 0;
       background: #fff;
       color: #000;
     }
 
     body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: ${widthMm}mm;
+      background: #fff;
+      color: #000;
       font-family: "Courier New", Courier, monospace;
       font-size: 14px;
+      /* Bold weight improves visibility on thermal paper */
+      font-weight: 600;
       line-height: 1.4;
-      padding: 3mm 4mm 4mm;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      page-break-after: avoid;
-      page-break-inside: avoid;
+    }
+
+    /* Wrapper that starts immediately at top with small padding */
+    .receipt-wrap {
+      padding: 3mm 4mm 6mm;
     }
 
     .brand {
@@ -224,6 +234,7 @@ export function buildReceiptPrintHtml(sale) {
   </style>
 </head>
 <body>
+  <div class="receipt-wrap">
   <div class="brand">
     <h1>Clark</h1>
   </div>
@@ -255,6 +266,7 @@ export function buildReceiptPrintHtml(sale) {
 
   <div class="divider"></div>
   <p class="thanks">Thank You</p>
+  </div>
 </body>
 </html>`;
 }
