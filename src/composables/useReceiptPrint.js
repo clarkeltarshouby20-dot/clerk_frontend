@@ -55,11 +55,11 @@ function buildItemRows(items) {
             <span>${formatReceiptMoney(item.original_unit_price * item.quantity)}</span>
           </div>
           ${itemDisc}
+          <div class="item-unit-note">Unit after discount: ${unitAfterDisc}</div>
           <div class="row item-total">
             <span>Line Total</span>
             <span>${formatReceiptMoney(item.line_subtotal)}</span>
           </div>
-          <div class="item-unit-note">Unit after discount: ${unitAfterDisc}</div>
         </div>
       `;
     })
@@ -199,8 +199,9 @@ export function buildReceiptPrintHtml(sale) {
     }
 
     .item-unit-note {
-      font-size: 9px;
-      color: #333;
+      font-size: 11px;
+      font-weight: 700;
+      color: #000;
       margin-top: 1mm;
     }
 
@@ -237,6 +238,7 @@ export function buildReceiptPrintHtml(sale) {
   <div class="receipt-wrap">
   <div class="brand">
     <h1>Clark</h1>
+    <p>Welcome to upper class</p>
   </div>
 
   <div class="divider"></div>
