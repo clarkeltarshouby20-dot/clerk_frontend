@@ -46,7 +46,7 @@ export function printHtmlInHiddenIframe(html) {
   });
 }
 
-export function buildLabelPrintDocument({ productName, barcode, barcodeSvgMarkup, escapeHtml }) {
+export function buildLabelPrintDocument({ barcode, price, barcodeSvgMarkup, escapeHtml }) {
   const { widthMm, heightMm } = LABEL_PRINT;
 
   return `<!DOCTYPE html>
@@ -97,31 +97,28 @@ export function buildLabelPrintDocument({ productName, barcode, barcodeSvgMarkup
       page-break-inside: avoid;
     }
 
-    .label-name {
+    .label-price {
       width: ${widthMm - 4}mm;
-      font-size: 7pt;
-      font-weight: 700;
+      font-size: 9pt;
+      font-weight: 800;
       text-align: center;
-      line-height: 1.1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      line-height: 1.2;
       flex-shrink: 0;
     }
 
     .barcode-svg {
       display: block;
       width: ${widthMm - 6}mm;
-      height: 26mm;
-      max-height: 26mm;
+      height: 18mm;
+      max-height: 18mm;
       flex-shrink: 0;
     }
   </style>
 </head>
 <body>
   <div class="label-sheet">
-    <p class="label-name">${escapeHtml(productName)}</p>
     ${barcodeSvgMarkup}
+    <p class="label-price">EGP ${escapeHtml(Number(price || 0).toFixed(2))}</p>
   </div>
 </body>
 </html>`;

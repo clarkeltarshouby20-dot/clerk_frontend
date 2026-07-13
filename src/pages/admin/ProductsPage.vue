@@ -320,6 +320,7 @@
       v-if="showBarcodePrint && viewedProduct?.barcode"
       :product-name="viewedProduct.name"
       :barcode="viewedProduct.barcode"
+      :price="Number(viewedProduct.price || 0)"
       @close="showBarcodePrint = false"
     />
 

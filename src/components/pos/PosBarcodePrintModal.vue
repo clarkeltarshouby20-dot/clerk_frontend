@@ -16,8 +16,8 @@
             class="label-preview-frame"
             :style="{ aspectRatio: `${labelSize.widthMm} / ${labelSize.heightMm}` }"
           >
-            <p class="label-preview-name">{{ productName }}</p>
             <svg ref="barcodeRef" class="label-preview-barcode"></svg>
+            <p class="label-preview-price">EGP {{ price.toFixed(2) }}</p>
           </div>
 
           <p class="text-xs text-textSecondary font-mono">{{ barcode }}</p>
@@ -61,6 +61,8 @@ import {
 const props = defineProps({
   productName: { type: String, required: true },
   barcode: { type: String, required: true },
+  // Price displayed on label instead of product name
+  price: { type: Number, default: 0 },
 });
 
 defineEmits(["close"]);
@@ -81,12 +83,13 @@ function escapeHtml(value) {
 function renderBarcode(svgEl, { preview = false } = {}) {
   if (!svgEl || !props.barcode) return;
 
+  // Smaller barcode: reduced height and bar width for compact label
   JsBarcode(svgEl, props.barcode, {
     format: "CODE128",
-    width: preview ? 1.6 : 1,
-    height: preview ? 36 : 32,
+    width: preview ? 1.2 : 0.8,
+    height: preview ? 26 : 20,
     displayValue: true,
-    fontSize: preview ? 9 : 8,
+    fontSize: preview ? 8 : 7,
     margin: 0,
     textMargin: 1,
   });
@@ -114,8 +117,8 @@ async function printLabel() {
 
   try {
     const html = buildLabelPrintDocument({
-      productName: props.productName,
       barcode: props.barcode,
+      price: props.price,
       barcodeSvgMarkup: buildLabelSvgMarkup(),
       escapeHtml,
     });
@@ -149,20 +152,19 @@ onMounted(async () => {
   color: #000;
 }
 
-.label-preview-name {
+.label-preview-price {
   width: 100%;
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   text-align: center;
-  line-height: 1.1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
+  color: #000;
+  margin-top: 1mm;
 }
 
 .label-preview-barcode {
   width: 100%;
-  max-height: 4.5rem;
+  max-height: 3.5rem;
 }
 
 .label-setup-guide summary {

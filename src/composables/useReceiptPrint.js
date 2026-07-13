@@ -100,8 +100,8 @@ export function buildReceiptPrintHtml(sale) {
 
     body {
       font-family: "Courier New", Courier, monospace;
-      font-size: 11px;
-      line-height: 1.35;
+      font-size: 14px;
+      line-height: 1.4;
       padding: 3mm 4mm 4mm;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -122,7 +122,7 @@ export function buildReceiptPrintHtml(sale) {
     }
 
     .brand p {
-      font-size: 9px;
+      font-size: 11px;
       line-height: 1.3;
       padding: 0 2mm;
     }
@@ -162,7 +162,7 @@ export function buildReceiptPrintHtml(sale) {
     .section-title {
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 0.06em;
       margin-bottom: 2mm;
     }
@@ -226,7 +226,6 @@ export function buildReceiptPrintHtml(sale) {
 <body>
   <div class="brand">
     <h1>Clark</h1>
-    <p>Not for everyone, welcome to the upper class</p>
   </div>
 
   <div class="divider"></div>
