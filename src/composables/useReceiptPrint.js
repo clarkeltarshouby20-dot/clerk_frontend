@@ -132,9 +132,11 @@ export function buildReceiptPrintHtml(sale) {
     }
 
     .brand p {
-      font-size: 11px;
+      font-size: 12px;
+      font-weight: 700;
       line-height: 1.3;
       padding: 0 2mm;
+      color: #000;
     }
 
     .divider {
@@ -193,9 +195,10 @@ export function buildReceiptPrintHtml(sale) {
     }
 
     .item-variant {
-      font-size: 10px;
+      font-size: 12px;
+      font-weight: 700;
       margin-bottom: 1mm;
-      color: #222;
+      color: #000;
     }
 
     .item-unit-note {
@@ -238,7 +241,7 @@ export function buildReceiptPrintHtml(sale) {
   <div class="receipt-wrap">
   <div class="brand">
     <h1>Clark</h1>
-    <p>Welcome to upper class</p>
+    <p>Welcome to the upper class</p>
   </div>
 
   <div class="divider"></div>
