@@ -109,8 +109,8 @@ export function buildLabelPrintDocument({ barcode, price, barcodeSvgMarkup, esca
     .barcode-svg {
       display: block;
       width: ${widthMm - 6}mm;
-      height: 18mm;
-      max-height: 18mm;
+      height: 12mm;
+      max-height: 12mm;
       flex-shrink: 0;
     }
   </style>

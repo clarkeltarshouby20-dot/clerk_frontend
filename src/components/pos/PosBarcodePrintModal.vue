@@ -83,13 +83,13 @@ function escapeHtml(value) {
 function renderBarcode(svgEl, { preview = false } = {}) {
   if (!svgEl || !props.barcode) return;
 
-  // Smaller barcode: reduced height and bar width for compact label
+  // Smaller barcode: further reduced height and bar width for compact label
   JsBarcode(svgEl, props.barcode, {
     format: "CODE128",
-    width: preview ? 1.2 : 0.8,
-    height: preview ? 26 : 20,
+    width: preview ? 1.2 : 0.65,
+    height: preview ? 26 : 12,
     displayValue: true,
-    fontSize: preview ? 8 : 7,
+    fontSize: preview ? 8 : 6,
     margin: 0,
     textMargin: 1,
   });
