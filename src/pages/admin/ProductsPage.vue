@@ -996,7 +996,7 @@ function createColorState(color = {}) {
 async function fetchProducts(page = 1) {
   loading.value = true;
   try {
-    const params = { page, limit: 20 };
+    const params = { page, limit: 20, include_inactive: "true" };
     if (search.value) params.name = search.value;
     const { data } = await api.get("/products", { params });
     products.value = data.data;
@@ -1445,9 +1445,11 @@ async function deleteProduct() {
   try {
     await api.delete(`/products/${productToDelete.value.id}`);
     showToast?.(`${t("common.delete")} successful`, "success");
+    deleteModal.value = false;
     await fetchProducts(pagination.page);
   } catch (error) {
     showToast?.(error.response?.data?.message || t("common.error"), "error");
+    deleteModal.value = false;
   }
 }
 

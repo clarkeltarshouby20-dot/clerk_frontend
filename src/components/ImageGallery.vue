@@ -43,13 +43,15 @@
       <template v-if="images && images.length > 1">
         <button
           @click="prev"
-          class="absolute start-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-md hover:scale-110 transition-transform rounded-full"
+          class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-md hover:scale-110 transition-transform rounded-full z-10"
+          aria-label="Previous image"
         >
           <ChevronLeft class="w-5 h-5 text-textPrimary" />
         </button>
         <button
           @click="next"
-          class="absolute end-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-md hover:scale-110 transition-transform rounded-full"
+          class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-md hover:scale-110 transition-transform rounded-full z-10"
+          aria-label="Next image"
         >
           <ChevronRight class="w-5 h-5 text-textPrimary" />
         </button>
